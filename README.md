@@ -1,6 +1,6 @@
-# BookdiaNight Server
+# ALUA Academy Management Server
 
-Welcome to the **BookdiaNight Server** project! This repository contains the complete backend infrastructure and application code for the BookdiaNight platform.
+Welcome to the **ALUA Academy Management Server** project! This repository contains the complete backend infrastructure and application code for the ALUA Academy Management platform.
 
 This is a **Docker-centric** backend. The application relies on a multi-service architecture where separate containers handle specific responsibilities, backed by robust managed cloud infrastructure.
 
@@ -16,7 +16,7 @@ This is a **Docker-centric** backend. The application relies on a multi-service 
 
 ## 🚀 Start Here
 
-The BookDiaNight backend is deeply documented. Please use the following map to find exactly what you need.
+The ALUA Academy Management backend is deeply documented. Please use the following map to find exactly what you need.
 
 | I want to... | Read |
 | --- | --- |

@@ -1,4 +1,4 @@
-# BookDiaNight Code Quality & Coding Conventions
+# ALUA Academy Management Code Quality & Coding Conventions
 
 > This document is a mandatory coding contract for AI agents and developers working in this repository.
 >

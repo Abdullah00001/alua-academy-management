@@ -2,7 +2,7 @@
 
 ## 1. System Architecture
 
-The BookDiaNight system represents a modern, containerized, multi-service backend hosted on DigitalOcean. 
+The ALUA Academy Management system represents a modern, containerized, multi-service backend hosted on DigitalOcean. 
 
 ### High-Level Topology
 
@@ -10,18 +10,18 @@ The BookDiaNight system represents a modern, containerized, multi-service backen
 graph TD
     Client[Mobile/Web Clients] -->|HTTPS 443| DO_LB[DO Cloud Firewall]
     DO_LB -->|Port 80/443| Nginx[Nginx Reverse Proxy]
-    Nginx -->|Port 5000| Server[BookDiaNight Server]
+    Nginx -->|Port 5000| Server[ALUA Academy Management Server]
     
     Server -->|Read/Write| Postgres[(Managed PostgreSQL)]
     Server -->|PubSub/Cache| Valkey[(Managed Valkey)]
     Server -->|Offload Jobs| BullMQ[BullMQ Queues]
     
-    Worker[BookDiaNight Worker] -->|Consume Jobs| BullMQ
+    Worker[ALUA Academy Management Worker] -->|Consume Jobs| BullMQ
     Worker -->|Read/Write| Postgres
     Worker -->|Send Emails| SMTP[External SMTP]
     Worker -->|Push Notifications| Firebase[Firebase Cloud Messaging]
     
-    Scheduler[BookDiaNight Scheduler] -->|Cron| BullMQ
+    Scheduler[ALUA Academy Management Scheduler] -->|Cron| BullMQ
     
     Server -->|Uploads| Spaces[(DO Spaces / S3)]
 ```

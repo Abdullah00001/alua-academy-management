@@ -1,6 +1,6 @@
 # Environment Variables
 
-This document provides a safe reference for all environment variables expected by the BookDiaNight infrastructure. 
+This document provides a safe reference for all environment variables expected by the ALUA Academy Management infrastructure. 
 
 > [!CAUTION]
 > **NEVER expose actual values.** This document uses `<PLACEHOLDER>` tags. Actual values should only be injected via GitHub Actions Secrets or safely copied into a local `.env` file during development.
@@ -20,9 +20,9 @@ These variables are consumed by the Node.js containers (`server`, `worker`, `sch
 | `SMTP_PORT` | Yes | Email provider port | worker | `465` |
 | `SMTP_USER` | Yes | Email username | worker | `resend` |
 | `SMTP_PASS` | Yes | Email password/API key | worker | `<RESEND_API_KEY>` |
-| `SMTP_FROM` | Yes | Verified sender email address | worker | `no-reply@bookdianight.com` |
+| `SMTP_FROM` | Yes | Verified sender email address | worker | `no-reply@alua-academy-management.com` |
 | `S3_ENDPOINT` | Yes | DO Spaces endpoint | server, worker | `https://sfo3.digitaloceanspaces.com` |
-| `S3_BUCKET_NAME` | Yes | DO Spaces bucket name | server, worker | `bookdianight-storage` |
+| `S3_BUCKET_NAME` | Yes | DO Spaces bucket name | server, worker | `alua-academy-management-storage` |
 | `S3_ACCESS_KEY_ID` | Yes | DO Spaces API Key | server, worker | `<SPACES_ACCESS_KEY>` |
 | `S3_SECRET_ACCESS_KEY` | Yes | DO Spaces API Secret | server, worker | `<SPACES_SECRET_KEY>` |
 | `FIREBASE_PROJECT_ID` | Yes | Firebase project identifier | worker | `<FIREBASE_PROJECT_ID>` |
@@ -37,7 +37,7 @@ These variables are utilized strictly inside `docker-compose.yaml` interpolation
 
 | Variable Name | Required | Purpose | Example / Placeholder |
 |---------------|----------|---------|-----------------------|
-| `DOCKER_USERNAME` | Yes (Prod) | The DOCR registry URL | `registry.digitalocean.com/bookdianight-registry` |
+| `DOCKER_USERNAME` | Yes (Prod) | The DOCR registry URL | `registry.digitalocean.com/alua-academy-management-registry` |
 | `IMAGE_TAG` | Optional | Specifies the immutable tag to pull. Defaults to `latest`. | `v1.0.14` |
 
 ---

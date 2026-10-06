@@ -12,20 +12,20 @@ provider "digitalocean" {
 
 # VPC
 resource "digitalocean_vpc" "main" {
-  name     = "bookdianight-vpc"
+  name     = "alua-academy-management-vpc"
   region   = var.region
   ip_range = var.vpc_cidr
 }
 
 # SSH Key
 resource "digitalocean_ssh_key" "admin" {
-  name       = "BookDiaNight-admin-key"
+  name       = "ALUA Academy Management-admin-key"
   public_key = var.admin_public_key
 }
 
 # Cloud Firewall
 resource "digitalocean_firewall" "app_firewall" {
-  name        = "bookdianight-app-firewall"
+  name        = "alua-academy-management-app-firewall"
   droplet_ids = [digitalocean_droplet.app_server.id]
 
   # Inbound Rules
@@ -69,14 +69,14 @@ resource "digitalocean_firewall" "app_firewall" {
 # Droplet
 resource "digitalocean_droplet" "app_server" {
   image    = "ubuntu-24-04-x64"
-  name     = "bookdianight-server"
+  name     = "alua-academy-management-server"
   region   = var.region
   size     = "s-2vcpu-8gb-160gb-intel"
   vpc_uuid = digitalocean_vpc.main.id
   ssh_keys = [digitalocean_ssh_key.admin.id]
 
   # Assign to Firewall
-  tags = ["bookdianight-server"]
+  tags = ["alua-academy-management-server"]
 }
 
 
@@ -92,14 +92,14 @@ resource "digitalocean_reserved_ip_assignment" "app_ip_assignment" {
 }
 
 # Container Registry
-resource "digitalocean_container_registry" "bookdianight" {
-  name                   = "bookdianight-registry"
+resource "digitalocean_container_registry" "alua-academy-management" {
+  name                   = "alua-academy-management-registry"
   subscription_tier_slug = "starter"
 }
 
 # Managed PostgreSQL
 resource "digitalocean_database_cluster" "postgres" {
-  name                 = "bookdianight-pg"
+  name                 = "alua-academy-management-pg"
   engine               = "pg"
   version              = "16"
   size                 = "db-s-1vcpu-2gb"
@@ -120,7 +120,7 @@ resource "digitalocean_database_firewall" "postgres_fw" {
 
 # Managed Redis
 resource "digitalocean_database_cluster" "redis" {
-  name                 = "bookdianight-redis"
+  name                 = "alua-academy-management-redis"
   engine               = "valkey"
   version              = "8"
   size                 = "db-s-1vcpu-2gb"
@@ -141,7 +141,7 @@ resource "digitalocean_database_firewall" "redis_fw" {
 
 # DigitalOcean Spaces Bucket
 resource "digitalocean_spaces_bucket" "storage" {
-  name   = "bookdianight-storage"
+  name   = "alua-academy-management-storage"
   region = var.region
   acl    = "public-read"
 }

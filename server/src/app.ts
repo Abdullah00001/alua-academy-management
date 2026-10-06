@@ -162,7 +162,7 @@ app.get('/connect/complete', (_req: Request, res: Response) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BookDiaNight — Return to App</title>
+  <title>ALUA Academy Management — Return to App</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -200,7 +200,7 @@ app.get('/connect/complete', (_req: Request, res: Response) => {
   <div class="card">
     <div class="icon">✅</div>
     <h1>Setup Complete</h1>
-    <p>Your payout account has been processed.<br/>Please return to the <strong>BookDiaNight</strong> app to continue.</p>
+    <p>Your payout account has been processed.<br/>Please return to the <strong>ALUA Academy Management</strong> app to continue.</p>
     <div class="note">If you are on a mobile device with the app installed, it should have opened automatically.</div>
   </div>
 </body>

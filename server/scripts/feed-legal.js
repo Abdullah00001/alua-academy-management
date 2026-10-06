@@ -9,26 +9,26 @@ const legalRecords = [
   {
     type: 'TERMS_AND_CONDITION',
     label: 'Terms & Conditions',
-    content: `Welcome to BookDiaNight.
+    content: `Welcome to ALUA Academy Management.
 
 These Terms & Conditions are currently provided as initial placeholder content.
-The final terms will be maintained by the BookDiaNight administration team.`,
+The final terms will be maintained by the ALUA Academy Management administration team.`,
   },
   {
     type: 'PRIVACY_AND_POLICY',
     label: 'Privacy Policy',
-    content: `BookDiaNight respects your privacy.
+    content: `ALUA Academy Management respects your privacy.
 
 This Privacy Policy currently contains initial placeholder content.
-The final privacy policy will be maintained by the BookDiaNight administration team.`,
+The final privacy policy will be maintained by the ALUA Academy Management administration team.`,
   },
   {
     type: 'ABOUT_US',
     label: 'About Us',
-    content: `Welcome to BookDiaNight.
+    content: `Welcome to ALUA Academy Management.
 
 This page contains initial placeholder content.
-The BookDiaNight administration team can update this information from the Admin Panel.`,
+The ALUA Academy Management administration team can update this information from the Admin Panel.`,
   },
 ];
 

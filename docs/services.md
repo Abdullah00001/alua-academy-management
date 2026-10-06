@@ -2,7 +2,7 @@
 
 ## 1. BullMQ / Workers / Scheduler
 
-BookDiaNight utilizes a distributed job queue architecture to offload heavy synchronous tasks and schedule recurring crons, maintaining high API responsiveness.
+ALUA Academy Management utilizes a distributed job queue architecture to offload heavy synchronous tasks and schedule recurring crons, maintaining high API responsiveness.
 
 ### Architecture Breakdown
 - **server (Producer):** Enqueues asynchronous tasks (e.g., sending an email, processing an image) into the BullMQ queues and returns an immediate response to the client.
@@ -19,7 +19,7 @@ BookDiaNight utilizes a distributed job queue architecture to offload heavy sync
 
 ## 2. Redis / Valkey
 
-BookDiaNight leverages **Valkey** (an open-source Redis fork, fully Redis-compatible) as the primary in-memory data store.
+ALUA Academy Management leverages **Valkey** (an open-source Redis fork, fully Redis-compatible) as the primary in-memory data store.
 
 ### Roles
 1. **BullMQ Backend:** All queues, jobs, and retry mechanisms are persisted within Valkey.
@@ -44,10 +44,10 @@ The system integrates **Socket.IO** for real-time, bi-directional communication.
 
 ## 4. External Services
 
-The BookDiaNight backend is deeply integrated with several critical third-party external services.
+The ALUA Academy Management backend is deeply integrated with several critical third-party external services.
 
 ### DigitalOcean Container Registry (DOCR)
-- **Purpose:** Secure, private hosting of our Docker images (`bookdianight-server`, `worker`, `scheduler`).
+- **Purpose:** Secure, private hosting of our Docker images (`alua-academy-management-server`, `worker`, `scheduler`).
 - **Integration:** Authenticated via the `DO_REGISTRY_TOKEN` within GitHub Actions.
 
 ### DigitalOcean Spaces (S3 Compatible)

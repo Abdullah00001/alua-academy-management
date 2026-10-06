@@ -23,7 +23,7 @@ export function mailOption({
   attachments?: SendMailOptions['attachments'];
 }): SendMailOptions {
   return {
-    from: '"Bookdia Night" <no-reply@bookdianight.com>',
+    from: '"ALUA Academy Management" <no-reply@alua-academy-management.com>',
     to,
     subject,
     html,

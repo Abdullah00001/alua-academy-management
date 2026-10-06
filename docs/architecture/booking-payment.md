@@ -3,7 +3,7 @@
 ## 1. Purpose
 
 This document records the locked Booking and Payment product architecture for
-BookDiaNight. It is a decision record, not an implementation specification.
+ALUA Academy Management. It is a decision record, not an implementation specification.
 Implementation must not add fields, APIs, provider mechanics, or business rules
 that are not recorded here or separately approved.
 
@@ -106,13 +106,13 @@ change existing purchases.
 ### Marketplace distribution
 
 The intended payment flow is buyer payment through PayPal, with PayPal
-automatically distributing the BookDiaNight platform commission and the Club
-Owner seller portion. BookDiaNight must not be designed to receive the full
+automatically distributing the ALUA Academy Management platform commission and the Club
+Owner seller portion. ALUA Academy Management must not be designed to receive the full
 amount and manually pay sellers later.
 
 The marketplace/payment-provider mechanism must directly represent the buyer
-payment, seller/payee, and BookDiaNight platform fee. For example, a $50
-purchase with a 10% commission yields $5 for BookDiaNight and $45 for the Club
+payment, seller/payee, and ALUA Academy Management platform fee. For example, a $50
+purchase with a 10% commission yields $5 for ALUA Academy Management and $45 for the Club
 Owner.
 
 ### Payment confirmation
@@ -191,7 +191,7 @@ user, verifies the PDF exists, then returns/downloads the PDF.
 
 ### Event PDF content
 
-- BookDiaNight branding;
+- ALUA Academy Management branding;
 - Event name, date, start time, end time, and location;
 - purchase/ticket number;
 - buyer name, phone, gender, age, and image if available;
@@ -202,7 +202,7 @@ user, verifies the PDF exists, then returns/downloads the PDF.
 
 ### Club PDF content
 
-- BookDiaNight branding;
+- ALUA Academy Management branding;
 - Club name and location;
 - table/package name and table capacity;
 - booking date, start time, and end time;
@@ -244,7 +244,7 @@ check-in information.
 - Purchases, financial records, buyer/guest data, and ticket data use immutable
   snapshots.
 - PayPal marketplace distribution sends the platform fee and seller portion
-  directly through PayPal; BookDiaNight does not manually pay sellers.
+  directly through PayPal; ALUA Academy Management does not manually pay sellers.
 - Verified webhooks, not browser state, finalize payment.
 - Commission is order-snapshotted with two-decimal half-up rounding.
 - Club reviews require a finished Club reservation; Events have no reviews.

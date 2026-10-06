@@ -2,7 +2,7 @@
 
 ## 1. Authentication Flow
 
-BookDiaNight utilizes **JSON Web Tokens (JWT)** for stateless, highly scalable authentication.
+ALUA Academy Management utilizes **JSON Web Tokens (JWT)** for stateless, highly scalable authentication.
 
 ### Flow
 1. A client initiates a login via email/password or OAuth (Google/Apple).
@@ -31,7 +31,7 @@ Auth middlewares intercept HTTP requests, decode the JWT, verify the signature, 
 
 ### Secret Management
 - Development secrets are placed in a `.env` file that is strictly ignored in `.gitignore`.
-- Production secrets reside inside GitHub Actions (as Encrypted Secrets) and are injected securely into the Droplet via SSH during the SCP deployment phase, forming an isolated `/opt/bookdianight-server/.env` file owned strictly by the `deploy` user.
+- Production secrets reside inside GitHub Actions (as Encrypted Secrets) and are injected securely into the Droplet via SSH during the SCP deployment phase, forming an isolated `/opt/alua-academy-management-server/.env` file owned strictly by the `deploy` user.
 - **DO NOT** commit `.env`, Terraform output files (`tf_output.json`), or SSH private keys. (A historical incident involving leaked Terraform state serves as a reminder to always verify `.gitignore` boundaries).
 
 ---

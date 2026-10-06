@@ -1,18 +1,18 @@
 export const companyInformation = {
-  name: 'BookDia Night',
+  name: 'ALUA Academy Management',
   legalName: 'Beverly Group Srl',
   address: 'Via Sant’Anselmo, 34, 00153 Roma, Italy',
-  email: 'support@bookdianight.com',
+  email: 'support@alua-academy-management.com',
   phone: '+44 2045716412',
-  website: 'https://bookdianight.com',
-  logo: 'https://bookdianight-storage.fra1.cdn.digitaloceanspaces.com/attachments/dfea5cd3-1fce-4ad9-95ee-dd6dabfd37c1-1788236612997.png',
-  copyright: `© ${new Date().getFullYear()} BookDia Night. All rights reserved.`,
+  website: 'https://alua-academy-management.com',
+  logo: 'https://alua-academy-management-storage.fra1.cdn.digitaloceanspaces.com/attachments/dfea5cd3-1fce-4ad9-95ee-dd6dabfd37c1-1788236612997.png',
+  copyright: `© ${new Date().getFullYear()} ALUA Academy Management. All rights reserved.`,
 };
 
 export const emailInformation = {
-  fromName: 'BookDia Night',
-  fromEmail: 'no-reply@bookdianight.com',
-  replyTo: 'support@bookdianight.com',
+  fromName: 'ALUA Academy Management',
+  fromEmail: 'no-reply@alua-academy-management.com',
+  replyTo: 'support@alua-academy-management.com',
 };
 
 /**

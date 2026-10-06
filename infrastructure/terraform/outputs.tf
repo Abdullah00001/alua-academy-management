@@ -49,7 +49,7 @@ output "reserved_ip" {
 
 output "registry_endpoint" {
   description = "The endpoint of the Container Registry"
-  value       = digitalocean_container_registry.bookdianight.server_url
+  value       = digitalocean_container_registry.alua-academy-management.server_url
 }
 
 output "postgres_private_uri" {

@@ -2,7 +2,7 @@
 
 ## 1. PostgreSQL & Prisma
 
-BookDiaNight uses a Managed PostgreSQL database. The schema is entirely managed through the **Prisma ORM**.
+ALUA Academy Management uses a Managed PostgreSQL database. The schema is entirely managed through the **Prisma ORM**.
 
 ### Prisma Schema (`prisma/schema.prisma`)
 The schema acts as the single source of truth for the data model, enforcing strict referential integrity and type safety across the TypeScript backend.
@@ -36,7 +36,7 @@ When a developer modifies `schema.prisma`:
 ### Production Migration Sequence (`db-migrator`)
 In production, the database is never migrated manually. The migration sequence is governed by a strict initialization gate in Docker Compose.
 
-1. **db-migrator Container Starts:** During deployment, Docker Compose boots an ephemeral container (`db-migrator`) that uses the exact same `bookdianight-server` image but overrides the entrypoint to run `npx prisma migrate deploy`.
+1. **db-migrator Container Starts:** During deployment, Docker Compose boots an ephemeral container (`db-migrator`) that uses the exact same `alua-academy-management-server` image but overrides the entrypoint to run `npx prisma migrate deploy`.
 2. **Execution:** The migrator connects to the managed PostgreSQL database and applies any pending `.sql` migration files stored in `prisma/migrations/`.
 3. **Graceful Exit:** If successful, the `db-migrator` exits with code `0`.
 4. **Service Boot:** The `server`, `worker`, and `scheduler` containers are strictly configured with `depends_on: db-migrator: condition: service_completed_successfully`. They remain paused until the migrator finishes. Once the migrator exits with `0`, the continuous services boot safely against a fully synchronized database schema.

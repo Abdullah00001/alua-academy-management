@@ -1,6 +1,6 @@
-# BookDiaNight Documentation Index
+# ALUA Academy Management Documentation Index
 
-Welcome to the central documentation knowledge base for the BookDiaNight backend.
+Welcome to the central documentation knowledge base for the ALUA Academy Management backend.
 
 ## 🧭 Source of Truth Boundaries
 

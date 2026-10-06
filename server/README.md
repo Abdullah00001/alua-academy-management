@@ -1,6 +1,6 @@
-# 🚀 BookdiaNight Server Service
+# 🚀 ALUA Academy Management Server Service
 
-This directory contains the primary Express.js API backend for the BookdiaNight application. 
+This directory contains the primary Express.js API backend for the ALUA Academy Management application. 
 
 It is designed using a robust modular architecture, integrating deeply with Docker, PostgreSQL, Prisma, Redis, and Socket.io.
 
@@ -49,7 +49,7 @@ The `server` comes pre-configured with a powerful Socket.io engine for real-time
 docker compose up -d
 
 # View the server logs in real-time
-docker logs -f bookdianight-server
+docker logs -f alua-academy-management-server
 
 # Scaffold a new API module
 npm run create:module

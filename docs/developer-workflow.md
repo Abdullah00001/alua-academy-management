@@ -1,6 +1,6 @@
 # Developer Workflow & Onboarding
 
-Welcome to the BookdiaNight Server project! This document outlines how to get up and running with the codebase as a new developer.
+Welcome to the ALUA Academy Management Server project! This document outlines how to get up and running with the codebase as a new developer.
 
 ## The Onboarding Path
 
@@ -26,8 +26,8 @@ This project relies heavily on Docker. You must install the following tools on y
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Abdullah00001/bookdianight-server.git
-   cd bookdianight-server
+   git clone https://github.com/Abdullah00001/alua-academy-management-server.git
+   cd alua-academy-management-server
    ```
 2. **Install root dependencies:**
    *(Executes on Host)*

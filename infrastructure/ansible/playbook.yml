@@ -1,11 +1,11 @@
 ---
-- name: Provision BookDiaNight Production Server
+- name: Provision ALUA Academy Management Production Server
   hosts: production
   become: yes
   vars:
     swap_file_size_mb: 2048
     deploy_user: deploy
-    app_dir: /opt/bookdianight-server
+    app_dir: /opt/alua-academy-management-server
 
   tasks:
     - name: Ensure system is updated and required packages are installed
@@ -144,16 +144,16 @@
 
     - name: Check if Let's Encrypt certificate exists
       stat:
-        path: /etc/letsencrypt/live/api.bookdianight.com/fullchain.pem
+        path: /etc/letsencrypt/live/api.alua-academy-management.com/fullchain.pem
       register: letsencrypt_cert
 
     - name: Configure Nginx reverse proxy (HTTP-only) for initial setup
       copy:
-        dest: /etc/nginx/sites-available/bookdianight
+        dest: /etc/nginx/sites-available/alua-academy-management
         content: |
           server {
               listen 80;
-              server_name api.bookdianight.com;
+              server_name api.alua-academy-management.com;
 
               location / {
                   proxy_pass http://127.0.0.1:5000;
@@ -173,10 +173,10 @@
 
     - name: Configure Nginx reverse proxy (HTTPS enabled)
       copy:
-        dest: /etc/nginx/sites-available/bookdianight
+        dest: /etc/nginx/sites-available/alua-academy-management
         content: |
           server {
-              server_name api.bookdianight.com;
+              server_name api.alua-academy-management.com;
 
               location / {
                   proxy_pass http://127.0.0.1:5000;
@@ -191,18 +191,18 @@
               }
 
               listen 443 ssl; # managed by Ansible/Certbot
-              ssl_certificate /etc/letsencrypt/live/api.bookdianight.com/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/api.bookdianight.com/privkey.pem;
+              ssl_certificate /etc/letsencrypt/live/api.alua-academy-management.com/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/api.alua-academy-management.com/privkey.pem;
               include /etc/letsencrypt/options-ssl-nginx.conf;
               ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
           }
 
           server {
-              if ($host = api.bookdianight.com) {
+              if ($host = api.alua-academy-management.com) {
                   return 301 https://$host$request_uri;
               }
               listen 80;
-              server_name api.bookdianight.com;
+              server_name api.alua-academy-management.com;
               return 404;
           }
         mode: '0644'
@@ -211,8 +211,8 @@
 
     - name: Enable Nginx configuration
       file:
-        src: /etc/nginx/sites-available/bookdianight
-        dest: /etc/nginx/sites-enabled/bookdianight
+        src: /etc/nginx/sites-available/alua-academy-management
+        dest: /etc/nginx/sites-enabled/alua-academy-management
         state: link
       notify: restart nginx
 

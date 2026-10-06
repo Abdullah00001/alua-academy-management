@@ -14,7 +14,7 @@ export const corsWhiteList = [
   'http://10.10.10.26:3000',
   'http://10.10.10.27:3008',
   'http://10.10.10.27:3001',
-  'https://api.bookdianight.com',
+  'https://api.alua-academy-management.com',
   'http://localhost:5000',
   'http://localhost:5001',
   'http://localhost:5002',
@@ -26,9 +26,9 @@ export const corsWhiteList = [
   'http://localhost:5008',
   'https://jump-look-speech-cam.trycloudflare.com',
   'https://jump-look-speech-cam.trycloudflare.com',
-  'https://bookdianight.localbox.online',
+  'https://alua-academy-management.localbox.online',
   'http://localhost:5173',
-  'https://bookdianight-admin.localbox.online',
+  'https://alua-academy-management-admin.localbox.online',
 ];
 export const saltRound = 10;
 export const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;

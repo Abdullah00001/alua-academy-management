@@ -1,6 +1,6 @@
-# BookDiaNight AI Agent & Developer Guidelines
+# ALUA Academy Management AI Agent & Developer Guidelines
 
-This file is the persistent operating contract for Gemini (and other AI coding agents) and developers working in the BookDiaNight repository.
+This file is the persistent operating contract for Gemini (and other AI coding agents) and developers working in the ALUA Academy Management repository.
 
 These rules apply to every task unless the human explicitly overrides a rule.
 
@@ -45,7 +45,7 @@ Before introducing a pattern, search the repository for an existing example.
 
 Prefer:
 
-> Existing BookDiaNight implementation > documented project convention > established module pattern > generic best practice.
+> Existing ALUA Academy Management implementation > documented project convention > established module pattern > generic best practice.
 
 Never replace an established repository convention merely because another approach appears cleaner.
 
