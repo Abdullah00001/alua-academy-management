@@ -28,7 +28,7 @@ export const corsWhiteList = [
   'https://jump-look-speech-cam.trycloudflare.com',
   'https://alua-academy-management.localbox.online',
   'http://localhost:5173',
-  'https://alua-academy-management-admin.localbox.online',
+  'https://alua-admin.localbox.online',
 ];
 export const saltRound = 10;
 export const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
