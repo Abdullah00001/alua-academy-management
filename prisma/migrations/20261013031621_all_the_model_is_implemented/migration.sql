@@ -25,14 +25,6 @@ CREATE TYPE "LegalContentType" AS ENUM ('ABOUT_US', 'TERMS_AND_CONDITION', 'PRIV
 -- CreateEnum
 CREATE TYPE "WebhookEventStatus" AS ENUM ('RECEIVED', 'PROCESSED', 'FAILED');
 
--- AlterEnum
-BEGIN;
-CREATE TYPE "NotificationType_new" AS ENUM ('FEE_CREATED', 'PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'INVOICE_OVERDUE', 'REPORT_SUBMITTED', 'REPORT_REVIEWED', 'HOMEWORK_ASSIGNED', 'SESSION_REMINDER', 'CHILD_ABSENT', 'NEW_MESSAGE', 'ANNOUNCEMENT', 'ACCOUNT_VERIFIED', 'PASSWORD_RESET');
-ALTER TABLE "Notification" ALTER COLUMN "notificationType" TYPE "NotificationType_new" USING ("notificationType"::text::"NotificationType_new");
-ALTER TYPE "NotificationType" RENAME TO "NotificationType_old";
-ALTER TYPE "NotificationType_new" RENAME TO "NotificationType";
-DROP TYPE "public"."NotificationType_old";
-COMMIT;
 
 -- CreateTable
 CREATE TABLE "User" (
