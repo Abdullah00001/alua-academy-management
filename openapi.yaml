@@ -284,6 +284,88 @@ components:
             errorType:
               type: string
               example: 'DUPLICATE_DATA'
+    VerifySignupPayload:
+      type: object
+      required:
+        - otp
+        - deviceIdentifier
+        - fcmToken
+        - platform
+      properties:
+        otp:
+          type: string
+          minLength: 6
+          example: '123456'
+          description: 6-digit OTP code sent to user email.
+        deviceIdentifier:
+          type: string
+          minLength: 1
+          example: 'device-uuid-1234'
+        fcmToken:
+          type: string
+          minLength: 1
+          example: 'fcm_token_sample_abc123'
+        platform:
+          type: string
+          enum:
+            - PARENT
+            - TEACHER
+          example: 'PARENT'
+    VerifySignupUserDTO:
+      type: object
+      required:
+        - accessToken
+        - isProfileSetup
+        - role
+        - accountStatus
+        - id
+        - fullName
+        - avatarUrl
+      properties:
+        accessToken:
+          type: string
+          description: Standard user access token for authenticated endpoints.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        isProfileSetup:
+          type: boolean
+          example: true
+        role:
+          type: string
+          enum:
+            - PARENT
+            - TEACHER
+          example: PARENT
+        accountStatus:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - BLOCKED
+          example: ACTIVE
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        fullName:
+          type: string
+          example: 'John Doe'
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: null
+    VerifySignupResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'User verification successful'
+            data:
+              $ref: '#/components/schemas/VerifySignupUserDTO'
 
 paths:
   /health:
@@ -368,6 +450,128 @@ paths:
                 errors:
                   - field: email
                     message: 'Please provide a valid email address'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+  /api/v1/auth/verify:
+    post:
+      tags:
+        - Auth
+      summary: Verify signup user account with OTP
+      description: Verifies user account using OTP and the temporary OTP page token in the Authorization Bearer header. Marks user ACTIVE, saves device session, invalidates OTP, blacklists the OTP token, and returns user access token and profile info.
+      operationId: authVerifySignup
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifySignupPayload'
+      responses:
+        '200':
+          description: User verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifySignupResponse'
+              example:
+                success: true
+                message: 'User verification successful'
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  isProfileSetup: true
+                  role: PARENT
+                  accountStatus: ACTIVE
+                  id: 123e4567-e89b-12d3-a456-426614174000
+                  fullName: 'John Doe'
+                  avatarUrl: null
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '401':
+          description: Authentication or OTP verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                tokenInvalid:
+                  summary: Token invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                tokenBlacklisted:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                otpExpired:
+                  summary: OTP expired
+                  value:
+                    success: false
+                    message: 'OTP has expired, please request a new one'
+                    errorType: 'OTP_EXPIRED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                otpInvalid:
+                  summary: OTP invalid
+                  value:
+                    success: false
+                    message: 'Invalid OTP, please check and try again'
+                    errorType: 'INVALID_OTP'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: otp
+                    message: 'Otp must be at least 6 characters long'
                 traceId: 123e4567-e89b-12d3-a456-426614174000
         '500':
           description: Internal server error

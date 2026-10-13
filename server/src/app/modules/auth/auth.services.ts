@@ -5,7 +5,11 @@ import {
   TVerifySignUserOtpPayload,
 } from '@/app/modules/auth/auth.types';
 import { getEmailQueue } from '@/app/queues/email/email.queue';
-import { generateOtpPageToken } from '@/app/utils/jwt.utils';
+import {
+  generateAccessTokenForUser,
+  generateOtpPageToken,
+  verifyOtpPageToken,
+} from '@/app/utils/jwt.utils';
 import { hashOtp } from '@/app/utils/otp.utils';
 import { hashPassword } from '@/app/utils/password.utils';
 import {
@@ -20,7 +24,7 @@ import {
   REDIS_PREFIXES,
   userAccessTokenExpiresIn,
 } from '@/const';
-import { SignupDTO } from '@/app/modules/auth/auth.dto';
+import { SignupDTO, VerifySignupUserDTO } from '@/app/modules/auth/auth.dto';
 import {
   DeviceStatus,
   Platform,
@@ -28,6 +32,7 @@ import {
   User,
   UserStatus,
 } from '@prisma/client';
+import { JwtPayload } from 'jsonwebtoken';
 
 /**
  * This service is for create signup user
@@ -102,15 +107,19 @@ export const verifySignupUserService = async ({
   payload,
   traceId,
   user,
+  token,
 }: {
   payload: TVerifySignUserOtpPayload;
   traceId: string;
   user: User;
-}): Promise<void> => {
+  token: string;
+}): Promise<VerifySignupUserDTO> => {
   try {
+    const redisClient = getRedisClient();
+    const emailQueue = getEmailQueue();
     const { deviceIdentifier, fcmToken, platform } = payload;
     const sessionExpiresAt = sessionTimeCalculation(userAccessTokenExpiresIn);
-    const data = await prisma.$transaction(async (tx) => {
+    const { updatedUser } = await prisma.$transaction(async (tx) => {
       // 1. Revoke any ACTIVE session with the same deviceIdentifier (different user)
       await tx.device.updateMany({
         where: {
@@ -166,7 +175,46 @@ export const verifySignupUserService = async ({
 
       return { updatedUser };
     });
-    return;
+
+    const accessToken = generateAccessTokenForUser({
+      role: updatedUser.role,
+      sub: updatedUser.id,
+      deviceId: deviceIdentifier,
+      accountStatus: updatedUser.status,
+      rememberMe: true,
+    });
+
+    const decoded = verifyOtpPageToken(token) as JwtPayload;
+    const tokenExpirationTime = decoded.exp as number;
+    const currentTime = Math.floor(Date.now() / 1000); // current time in seconds
+    const ttl = Math.floor(tokenExpirationTime - currentTime); // remaining time in seconds
+    if (ttl > 0)
+      await redisClient.set(
+        createRedisKey(REDIS_PREFIXES.blacklist, token),
+        token as string,
+        'EX',
+        ttl
+      );
+    const emailData = {
+      name: updatedUser.fullName,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      traceId,
+    };
+
+    await Promise.all([
+      emailQueue.add(QUEUE_JOBS.ACCOUNT_CREATE_SUCCESS, emailData),
+      redisClient.del(createRedisKey(REDIS_PREFIXES.otp, updatedUser.id)),
+    ]);
+    return new VerifySignupUserDTO(
+      accessToken,
+      updatedUser.isProfileSetup,
+      updatedUser.role,
+      updatedUser.status,
+      updatedUser.fullName,
+      updatedUser.id,
+      updatedUser.avatarUrl
+    );
   } catch (error) {
     throw error;
   }

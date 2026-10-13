@@ -10,6 +10,7 @@ import {
   TVerifySignUserOtpPayload,
 } from '@/app/modules/auth/auth.types';
 import { User } from '@prisma/client';
+import { extractToken } from '@/app/utils/jwt.utils';
 
 /**
  * This controller is for signup.
@@ -43,13 +44,20 @@ export const signupController = asyncHandler(
 export const verifySignupUserController = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const traceId = getTraceId();
+    const token = extractToken(req) as string;
     const payload = req.body as TVerifySignUserOtpPayload;
     const user = req.user as User;
-    await verifySignupUserService({ payload, traceId, user });
+    const data = await verifySignupUserService({
+      payload,
+      traceId,
+      user,
+      token,
+    });
 
     res.status(200).json({
       success: true,
       message: 'User verification successful',
+      data,
       traceId,
     });
     return;
