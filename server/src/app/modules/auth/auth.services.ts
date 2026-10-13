@@ -136,7 +136,7 @@ export const verifySignupUserService = async ({
     const emailQueue = getEmailQueue();
     const { deviceIdentifier, fcmToken, platform } = payload;
     const sessionExpiresAt = sessionTimeCalculation(userAccessTokenExpiresIn);
-    const { updatedUser } = await prisma.$transaction(async (tx) => {
+    const { updatedUser, device } = await prisma.$transaction(async (tx) => {
       // 1. Revoke any ACTIVE session with the same deviceIdentifier (different user)
       await tx.device.updateMany({
         where: {
@@ -173,13 +173,12 @@ export const verifySignupUserService = async ({
           status: UserStatus.ACTIVE,
           emailVerifiedAt: user.email ? new Date() : undefined,
           phoneVerifiedAt: user.phone ? new Date() : undefined,
-          profileCompletedAt: new Date(),
           lastLoginAt: new Date(),
         },
       });
 
       // 4. Create new device session
-      await tx.device.create({
+      const device = await tx.device.create({
         data: {
           userId: user.id,
           deviceIdentifier,
@@ -190,13 +189,13 @@ export const verifySignupUserService = async ({
         },
       });
 
-      return { updatedUser };
+      return { updatedUser, device };
     });
 
     const accessToken = generateAccessTokenForUser({
       role: updatedUser.role,
       sub: updatedUser.id,
-      deviceId: deviceIdentifier,
+      deviceId: device.id,
       accountStatus: updatedUser.status,
       rememberMe: true,
     });
