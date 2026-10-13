@@ -206,7 +206,7 @@ export const validateReqParams =
         });
         return;
       }
-      
+
       req.params = result.data as Record<string, string>;
       next();
     } catch (error) {
@@ -217,7 +217,6 @@ export const validateReqParams =
       });
     }
   };
-
 
 export function extractS3KeyFromUrl(url: string): string {
   try {
@@ -367,3 +366,14 @@ export function createRedisKey(
 
   return joinedParts ? `${prefix}:${joinedParts}` : prefix;
 }
+
+/**
+ * Calculates the expiration time for a session based on a duration string.
+ *
+ * @param duration - The duration for which the session should be valid.
+ * @returns The expiration time as a `Date` object.
+ */
+export const sessionTimeCalculation = (duration: string) => {
+  const timeInMs = expiresInTimeUnitToMs(duration);
+  return new Date(Date.now() + timeInMs);
+};

@@ -34,3 +34,22 @@ export const signupSchema = z.object({
     .trim(),
   isLegalTermAccepted: z.boolean({ error: 'Legal term must be accepted' }),
 });
+
+/**
+ * @description This schema is for verify signup schema endpoint
+ */
+export const verifySignupSchema = z.object({
+  otp: z.string().min(6, { error: 'Otp must be at least 6 characters long' }),
+  deviceIdentifier: z
+    .string({ error: 'Device identifier is required' })
+    .min(1, { error: 'Device identifier is required' })
+    .trim(),
+  fcmToken: z
+    .string({ error: 'FCM token is required' })
+    .min(1, { error: 'FCM token is required' })
+    .trim(),
+  platform: z.enum(
+    ['PARENT', 'TEACHER'],
+    'error: Invalid role. Please provide a valid role'
+  ),
+});
