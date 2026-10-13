@@ -29,6 +29,7 @@ import {
   DeviceStatus,
   Platform,
   RevokeReason,
+  Role,
   User,
   UserStatus,
 } from '@prisma/client';
@@ -60,15 +61,31 @@ export const signupService = async ({
       upperCaseAlphabets: false,
     });
     const hashedOtp = hashOtp({ otp });
-    const user = await prisma.user.create({
-      data: {
-        fullName,
-        email,
-        password: hashedPass,
-        phone,
-        isLegalTermAccepted,
-        role,
-      },
+    const user = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          fullName,
+          email,
+          password: hashedPass,
+          phone,
+          isLegalTermAccepted,
+          role,
+        },
+      });
+      if (role === Role.PARENT) {
+        await tx.parent.create({
+          data: {
+            userId: user.id,
+          },
+        });
+      } else if (role === Role.TEACHER) {
+        await tx.teacher.create({
+          data: {
+            userId: user.id,
+          },
+        });
+      }
+      return user;
     });
     const token = generateOtpPageToken({
       accountStatus: user.status,
