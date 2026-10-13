@@ -8,12 +8,13 @@ export const signupController = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const traceId = getTraceId();
     const payload = req.body as TSignupPayload;
-    await signupService({ payload });
+    const data = await signupService({ payload, traceId });
 
     res.status(201).json({
       success: true,
       message:
         'Signup successful,Please check you email for otp to verify your account!',
+      data,
       traceId,
     });
     return;

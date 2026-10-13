@@ -177,11 +177,11 @@ model User {
   role               Role
   email              String?    @unique
   phone              String?    @unique
-  passwordHash       String
+  password           String
   fullName           String
   avatarUrl          String?
   language           Language   @default(EN)
-  status             UserStatus @default(ACTIVE)
+  status             UserStatus @default(INACTIVE)
   emailVerifiedAt    DateTime?
   phoneVerifiedAt    DateTime?
   profileCompletedAt DateTime?

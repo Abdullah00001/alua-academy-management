@@ -1,3 +1,4 @@
+import { UserStatus } from '@prisma/client';
 import { JwtPayload } from 'jsonwebtoken';
 import { Socket } from 'socket.io';
 
@@ -6,8 +7,7 @@ export interface ITokenPayload extends JwtPayload {
   deviceId?: string;
   rememberMe?: boolean;
   role: string;
-  isVerified: boolean;
-  accountStatus: string;
+  accountStatus: UserStatus;
 }
 
 export interface AuthenticatedSocket extends Socket {
