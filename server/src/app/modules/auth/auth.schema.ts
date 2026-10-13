@@ -33,10 +33,4 @@ export const signupSchema = z.object({
     })
     .trim(),
   isLegalTermAccepted: z.boolean({ error: 'Legal term must be accepted' }),
-  // deviceIdentifier: z.string().min(1, 'Device Identifier is required').trim(),
-  // fcmToken: z.string({ error: 'FCM token is required' }).trim(),
-  // platform: z.enum(
-  //   ['ANDROID', 'IOS'],
-  //   'error: Invalid platform. Please provide a valid platform'
-  // ),
 });

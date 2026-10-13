@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import logger from '@/app/configs/logger.configs';
 import { getTraceId } from '@/app/configs/requestContext.configs';
 import { ExtendedError } from '@/app/@types/error.types';
+import { SystemErrorType } from '@/const';
 
 export const globalErrorMiddleware = (
   err: Error,
@@ -27,6 +28,7 @@ export const globalErrorMiddleware = (
       res.status(400).json({
         success: false,
         message: 'Invalid JSON Payload',
+        errorType: SystemErrorType.INVALID_JSON_PAYLOAD,
         traceId: traceId,
       });
       return;
@@ -35,6 +37,7 @@ export const globalErrorMiddleware = (
     res.status(500).json({
       success: false,
       message: 'Internal Server Error',
+      errorType: SystemErrorType.INTERNAL_SERVER_ERROR,
       traceId: traceId,
     });
     return;
@@ -48,6 +51,7 @@ export const globalErrorMiddleware = (
   res.status(500).json({
     success: false,
     message: 'Internal Server Error',
+    errorType: SystemErrorType.INTERNAL_SERVER_ERROR,
     traceId,
   });
 

@@ -11,6 +11,7 @@ import {
   generate,
 } from '@/app/utils/system.utils';
 import { otpExpireAt, QUEUE_JOBS, REDIS_PREFIXES } from '@/const';
+import { SignupDTO } from '@/app/modules/auth/auth.dto';
 
 /**
  * This service is for create signup user
@@ -23,7 +24,7 @@ export const signupService = async ({
 }: {
   payload: TSignupPayload;
   traceId: string;
-}): Promise<{ token: string }> => {
+}): Promise<SignupDTO> => {
   try {
     const redisClient = getRedisClient();
     const emailQueue = getEmailQueue();
@@ -70,7 +71,7 @@ export const signupService = async ({
       ),
       emailQueue.add(QUEUE_JOBS.ACCOUNT_CREATE_SUCCESS, emailQueueData),
     ]);
-    return { token };
+    return new SignupDTO(token);
   } catch (error) {
     throw error;
   }

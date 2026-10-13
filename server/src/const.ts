@@ -29,6 +29,7 @@ export const corsWhiteList = [
   'https://alua-academy-management.localbox.online',
   'http://localhost:5173',
   'https://alua-admin.localbox.online',
+  'https://alua.localbox.online',
 ];
 export const saltRound = 10;
 export const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
@@ -305,6 +306,7 @@ export const QUEUE_JOBS = {
  * ------------------AUTH ERROR TYPES------------
  * ==============================================
  */
+
 export enum AuthErrorType {
   TOKEN_EXPIRED = 'TOKEN_EXPIRED',
   TOKEN_INVALID = 'TOKEN_INVALID',
@@ -319,6 +321,11 @@ export enum AuthErrorType {
   ACCESS_DENIED = 'ACCESS_DENIED',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   INVALID_DEVICE_CONTEXT = 'INVALID_DEVICE_CONTEXT',
+}
+
+export enum SystemErrorType {
+  INVALID_JSON_PAYLOAD = 'INVALID_JSON',
+  INTERNAL_SERVER_ERROR = 'SERVER_ERROR',
 }
 
 export const COOKIE_NAMES = {

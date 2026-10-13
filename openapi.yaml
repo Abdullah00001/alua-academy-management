@@ -9,6 +9,8 @@ servers:
 tags:
   - name: Health
     description: System health and status endpoints
+  - name: Auth
+    description: Authentication endpoints
 
 components:
   securitySchemes:
@@ -30,651 +32,6 @@ components:
 
         '
   schemas:
-    CreateWishlistPayload:
-      type: object
-      required:
-        - type
-        - targetId
-      properties:
-        type:
-          type: string
-          enum:
-            - CLUB
-            - EVENT
-        targetId:
-          type: string
-          format: uuid
-
-    GetWishlistResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
-        - type: object
-          properties:
-            meta:
-              $ref: '#/components/schemas/ExplorePaginationMeta'
-            data:
-              type: array
-              description: >
-                Array of saved items. The exact shape depends on the target type.
-                Stale records (deactivated Clubs, non-UPCOMING Events, deactivated Events) are excluded.
-                Ordered by wishlist creation time descending.
-              items:
-                oneOf:
-                  - $ref: '#/components/schemas/ExploreClubListItem'
-                  - $ref: '#/components/schemas/ExploreEventListItem'
-
-    ClubOpeningHourPayload:
-      type: object
-      required:
-        - dayOfWeek
-        - isClosed
-        - closesNextDay
-      properties:
-        dayOfWeek:
-          type: integer
-          minimum: 0
-          maximum: 6
-        isClosed:
-          type: boolean
-        openTime:
-          type: string
-          format: date-time
-          nullable: true
-        closeTime:
-          type: string
-          format: date-time
-          nullable: true
-        closesNextDay:
-          type: boolean
-    ClubPackagePayload:
-      type: object
-      required:
-        - name
-        - capacity
-        - price
-        - currency
-        - features
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        capacity:
-          type: integer
-          minimum: 1
-        price:
-          type: number
-          minimum: 0
-        currency:
-          type: string
-        features:
-          type: array
-          items:
-            type: string
-        sortOrder:
-          type: integer
-          default: 0
-    CreateClubPayload:
-      type: object
-      required:
-        - name
-        - thumbnail
-        - images
-        - dressCode
-        - isRecurring
-        - lat
-        - lng
-        - location
-        - openingHours
-        - packages
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        dressCode:
-          type: string
-        isRecurring:
-          type: boolean
-        isVip:
-          type: boolean
-          default: false
-        lat:
-          type: number
-          minimum: -90
-          maximum: 90
-        lng:
-          type: number
-          minimum: -180
-          maximum: 180
-        location:
-          type: string
-        openingHours:
-          type: array
-          items:
-            $ref: '#/components/schemas/ClubOpeningHourPayload'
-          minItems: 7
-          maxItems: 7
-        packages:
-          type: array
-          description: List of packages. All packages within a club MUST share the exact same currency string. Mixed currencies will result in a 422 validation error.
-          items:
-            $ref: '#/components/schemas/ClubPackagePayload'
-    UpdateClubOpeningHourPayload:
-      allOf:
-        - $ref: '#/components/schemas/ClubOpeningHourPayload'
-        - type: object
-          required:
-            - id
-          properties:
-            id:
-              type: string
-              format: uuid
-    UpdateClubPackagePayload:
-      allOf:
-        - $ref: '#/components/schemas/ClubPackagePayload'
-        - type: object
-          required:
-            - id
-            - isActive
-          properties:
-            id:
-              type: string
-              format: uuid
-            isActive:
-              type: boolean
-    UpdateClubPayload:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        dressCode:
-          type: string
-        isRecurring:
-          type: boolean
-        isVip:
-          type: boolean
-        lat:
-          type: number
-          minimum: -90
-          maximum: 90
-        lng:
-          type: number
-          minimum: -180
-          maximum: 180
-        location:
-          type: string
-        openingHours:
-          type: array
-          items:
-            $ref: '#/components/schemas/UpdateClubOpeningHourPayload'
-          minItems: 7
-          maxItems: 7
-        packages:
-          type: array
-          description: List of packages to update. All packages within a club MUST share the exact same currency string. Mixed currencies will result in a 422 validation error.
-          items:
-            $ref: '#/components/schemas/UpdateClubPackagePayload'
-    ExplorePaginationMetaLinks:
-      type: object
-      required:
-        - currentPage
-        - nextPage
-        - previousPage
-        - firstPage
-        - lastPage
-      properties:
-        currentPage:
-          type: string
-          format: uri
-        nextPage:
-          type: string
-          format: uri
-          nullable: true
-        previousPage:
-          type: string
-          format: uri
-          nullable: true
-        firstPage:
-          type: string
-          format: uri
-        lastPage:
-          type: string
-          format: uri
-    ExplorePaginationMeta:
-      type: object
-      required:
-        - total
-        - totalPages
-        - links
-      properties:
-        total:
-          type: integer
-        totalPages:
-          type: integer
-        links:
-          $ref: '#/components/schemas/ExplorePaginationMetaLinks'
-    ExploreClubListItem:
-      type: object
-      required:
-        - id
-        - name
-        - lat
-        - lng
-        - location
-        - type
-        - review
-        - isVip
-        - thumbnail
-        - priceRange
-        - currency
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        type:
-          type: string
-          enum:
-            - CLUB
-        review:
-          type: number
-        isVip:
-          type: boolean
-        thumbnail:
-          type: string
-          format: uri
-        priceRange:
-          type: object
-          required:
-            - minPrice
-            - maxPrice
-          properties:
-            minPrice:
-              type: number
-              description: The minimum package price derived strictly from ACTIVE packages. If a club has no active packages, this fallback value is 0.
-            maxPrice:
-              type: number
-              description: The maximum package price derived strictly from ACTIVE packages. If a club has no active packages, this fallback value is 0.
-          description: Object containing the minimum and maximum package prices for the club.
-        currency:
-          type: string
-          description: The single shared currency derived strictly from ACTIVE packages. If a club has no active packages, this fallback value is an empty string "".
-        isWishlist:
-          type: boolean
-          description: Whether the club is saved in the authenticated user's wishlist. Omitted for guest requests.
-    ExploreEventListItem:
-      type: object
-      required:
-        - id
-        - name
-        - lat
-        - lng
-        - location
-        - type
-        - thumbnail
-        - price
-        - currency
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        type:
-          type: string
-          enum:
-            - EVENT
-        thumbnail:
-          type: string
-          format: uri
-        price:
-          type: number
-        currency:
-          type: string
-        isWishlist:
-          type: boolean
-          description: Whether the event is saved in the authenticated user's wishlist. Omitted for guest requests.
-    ExploreClubDetailOpeningHour:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        clubId:
-          type: string
-          format: uuid
-        dayOfWeek:
-          type: integer
-        isClosed:
-          type: boolean
-        openTime:
-          type: string
-          format: date-time
-          nullable: true
-        closeTime:
-          type: string
-          format: date-time
-          nullable: true
-        closesNextDay:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    ExploreClubDetailPackage:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        clubId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        capacity:
-          type: integer
-        price:
-          type: number
-        currency:
-          type: string
-        features:
-          type: array
-          items:
-            type: string
-        sortOrder:
-          type: integer
-        isActive:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    ExploreClubDetailResponse:
-      type: object
-      required:
-        - id
-        - name
-        - thumbnail
-        - images
-        - dressCode
-        - isRecurring
-        - isVip
-        - lat
-        - lng
-        - location
-        - totalReviews
-        - clubOpeningHours
-        - clubPackages
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        dressCode:
-          type: string
-        isRecurring:
-          type: boolean
-        isVip:
-          type: boolean
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        totalReviews:
-          type: integer
-        clubOpeningHours:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExploreClubDetailOpeningHour'
-        clubPackages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExploreClubDetailPackage'
-        isWishlist:
-          type: boolean
-          description: Whether the club is saved in the authenticated user's wishlist. Omitted for guest requests.
-    ExploreEventDetailResponse:
-      type: object
-      required:
-        - id
-        - eventName
-        - thumbnail
-        - images
-        - eventStatus
-        - lat
-        - lng
-        - location
-        - startAt
-        - endAt
-        - dressCode
-        - eventPrice
-        - currency
-      properties:
-        id:
-          type: string
-          format: uuid
-        eventName:
-          type: string
-        eventDescription:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        eventStatus:
-          type: string
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        startAt:
-          type: string
-          format: date-time
-        endAt:
-          type: string
-          format: date-time
-        dressCode:
-          type: string
-        eventPrice:
-          type: number
-        currency:
-          type: string
-        isWishlist:
-          type: boolean
-          description: Whether the event is saved in the authenticated user's wishlist. Omitted for guest requests.
-    ChangePasswordPayload:
-      type: object
-      required:
-        - currentPassword
-        - newPassword
-        - confirmPassword
-      properties:
-        currentPassword:
-          type: string
-          minLength: 6
-        newPassword:
-          type: string
-          minLength: 6
-        confirmPassword:
-          type: string
-          minLength: 6
-    UpdateCommissionPayload:
-      type: object
-      required:
-        - serviceType
-        - chargePercentage
-      properties:
-        serviceType:
-          type: string
-          enum: [EVENT, CLUB]
-        chargePercentage:
-          type: number
-          format: decimal
-          multipleOf: 0.01
-          description: Decimal commission percentage with up to two decimal places.
-          example: 20.25
-    ClubPurchaseRequest:
-      type: object
-      required: [clubPackageId, startAt, endAt, guestCount]
-      properties:
-        clubPackageId: { type: string, format: uuid }
-        startAt:
-          {
-            type: string,
-            format: date-time,
-            description: Fixed CST wall-clock ISO-8601 value with required -06:00 offset.,
-          }
-        endAt:
-          {
-            type: string,
-            format: date-time,
-            description: Fixed CST wall-clock ISO-8601 value with required -06:00 offset.,
-          }
-        guestCount: { type: integer, minimum: 1 }
-    ClubAvailabilityResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
-        - type: object
-          required: [data]
-          properties:
-            message:
-              type: string
-              description: Empty results remain successful (HTTP 200). The message starts with "No table found" and explains whether the requested guest count exceeds the maximum active table capacity, suitable tables are unavailable for the interval, or the club has no active tables.
-              example: No table found for 12 guests. Maximum table capacity is 10.
-            data:
-              type: object
-              required: [availablePackages]
-              properties:
-                availablePackages:
-                  type: array
-                  description: Active packages that satisfy the requested guest count and interval.
-                  items:
-                    $ref: '#/components/schemas/ExploreClubDetailPackage'
-    EventPurchaseFriend:
-      type: object
-      required: [name, phoneNumber, gender, age]
-      properties:
-        name: { type: string }
-        phoneNumber: { type: string }
-        gender: { type: string, enum: [MALE, FEMALE, OTHER] }
-        age: { type: integer, minimum: 1 }
-        image: { type: string, format: uri }
-    EventPurchaseRequest:
-      type: object
-      required: [eventId]
-      properties:
-        eventId: { type: string, format: uuid }
-        friends:
-          {
-            type: array,
-            maxItems: 4,
-            items: { $ref: '#/components/schemas/EventPurchaseFriend' },
-          }
-    UpdateServiceChargePayload:
-      type: object
-      additionalProperties: false
-      required:
-        - amount
-      properties:
-        amount:
-          type: number
-          format: decimal
-          minimum: 0
-          exclusiveMinimum: true
-          maximum: 99999999.99
-          multipleOf: 0.01
-          description: Fixed global Service Charge amount. Must be greater than 0.00 and have no more than two decimal places.
-          example: 5.5
-    ServiceCharge:
-      type: object
-      required:
-        - id
-        - amount
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          enum: [GLOBAL]
-          description: The fixed singleton identifier for the global configuration.
-        amount:
-          type: number
-          format: decimal
-          minimum: 0
-          exclusiveMinimum: true
-          multipleOf: 0.01
-          description: Fixed global Service Charge amount. No currency is stored with this configuration.
-          example: 5.5
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     CheckAccessResponse:
       type: object
       properties:
@@ -804,6 +161,8 @@ components:
           example: false
         message:
           type: string
+        errorType:
+          type: string
         traceId:
           type: string
           format: uuid
@@ -811,6 +170,16 @@ components:
         - success
         - message
         - traceId
+    SystemErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            errorType:
+              type: string
+              enum:
+                - INVALID_JSON
+                - SERVER_ERROR
     AuthErrorResponse:
       allOf:
         - $ref: '#/components/schemas/ErrorResponse'
@@ -847,1033 +216,75 @@ components:
     SignupPayload:
       type: object
       required:
-        - role
-        - name
+        - fullName
         - email
-        - phoneNumber
-        - location
+        - phone
+        - role
         - password
-        - deviceIdentifier
-        - lat
-        - lng
-        - platform
+        - isLegalTermAccepted
       properties:
+        fullName:
+          type: string
+          minLength: 1
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: 'john.doe@example.com'
+        phone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+          example: '+1234567890'
         role:
           type: string
           enum:
-            - CLUB_OWNER
-            - USER
-        name:
-          type: string
-          minLength: 1
-        email:
-          type: string
-          format: email
-        phoneNumber:
-          type: string
-          minLength: 5
-        location:
-          type: string
-          minLength: 1
+            - PARENT
+            - TEACHER
+          example: PARENT
         password:
           type: string
           minLength: 6
-        deviceIdentifier:
-          type: string
-          minLength: 1
-        fcmToken:
-          type: string
-        lat:
-          type: number
-        lng:
-          type: number
-        platform:
-          type: string
-          enum:
-            - ANDROID
-            - IOS
-        gender:
-          type: string
-          enum:
-            - MALE
-            - FEMALE
-            - OTHER
-        dateOfBirth:
-          type: string
-          format: date-time
-    LoginPayload:
-      type: object
-      required:
-        - email
-        - password
-        - deviceIdentifier
-        - platform
-        - lat
-        - lng
-      properties:
-        email:
-          type: string
-          format: email
-          example: xopoxe8124@hebase.com
-        password:
-          type: string
-          minLength: 6
-          example: 12345678aA
-        deviceIdentifier:
-          type: string
-          minLength: 1
-          example: zZp|6sBQ<Ca2_=Kl]J7jt:Mvz{n9VT$v
-        platform:
-          type: string
-          enum:
-            - ANDROID
-            - IOS
-          example: ANDROID
-        fcmToken:
-          type: string
-          example: fcm_token_sample_abc123_def456_ghi789_jkl012_mno345_pqr678_stu901_vwx234_yz5678_ABCDEF_GHIJKL_MNOPQR_STUVWX_YZ
-        rememberMe:
-          type: boolean
-          default: false
-          example: true
-        lng:
-          type: number
-          format: double
-          example: -71.935353
-        lat:
-          type: number
-          format: double
-          example: -15.315821
-    OAuthLoginPayload:
-      type: object
-      required:
-        - email
-        - deviceIdentifier
-        - platform
-        - provider
-        - lat
-        - lng
-      properties:
-        email:
-          type: string
-          format: email
-          example: john.doe@example.com
-        deviceIdentifier:
-          type: string
-          minLength: 1
-          example: zZp|6sBQ<Ca2_=Kl]J7jt:Mvz{n9VT$v
-        platform:
-          type: string
-          enum:
-            - ANDROID
-            - IOS
-          example: ANDROID
-        provider:
-          type: string
-          enum:
-            - GOOGLE
-            - APPLE
-          example: GOOGLE
-        fcmToken:
-          type: string
-          example: fcm_token_sample
-        lat:
-          type: number
-          format: double
-          example: -15.315821
-        lng:
-          type: number
-          format: double
-          example: -71.935353
-    LoginResponse:
-      type: object
-      properties:
-        success:
+          maxLength: 16
+          description: Must contain at least one uppercase letter, one lowercase letter, one number, and one special character.
+          example: 'Secret123!'
+        isLegalTermAccepted:
           type: boolean
           example: true
-        message:
+    SignupDTO:
+      type: object
+      required:
+        - token
+      properties:
+        token:
           type: string
-          example: Login successful
-        data:
-          type: object
+          description: Temporary OTP page verification token.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    SignupResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
           properties:
-            token:
+            message:
               type: string
-              example: eyJhbGci...
-            role:
-              type: string
-              example: USER
-            isUserVerified:
-              type: boolean
-              example: true
-        traceId:
-          type: string
-          example: 1234567890
-    VerifySignupPayload:
-      type: object
-      required:
-        - otp
-        - deviceIdentifier
-        - platform
-      properties:
-        otp:
-          type: string
-          minLength: 6
-          maxLength: 6
-          pattern: ^\d+$
-        deviceIdentifier:
-          type: string
-          minLength: 1
-        fcmToken:
-          type: string
-        platform:
-          type: string
-          enum:
-            - ANDROID
-            - IOS
-    LogoutPayload:
-      type: object
-      required:
-        - deviceIdentifier
-      properties:
-        deviceIdentifier:
-          type: string
-          minLength: 1
-          description:
-            Client-generated app-installation identifier used to validate the
-            authenticated device context.
-    CheckAccessPayload:
-      type: object
-      required:
-        - deviceIdentifier
-        - lat
-        - lng
-        - platform
-      properties:
-        deviceIdentifier:
-          type: string
-          minLength: 1
-        lat:
-          type: number
-        lng:
-          type: number
-        platform:
-          type: string
-          enum:
-            - ANDROID
-            - IOS
-        fcmToken:
-          type: string
-    DeleteMediaPayload:
-      type: object
-      required:
-        - urls
-      properties:
-        urls:
-          type: array
-          items:
-            type: string
-            minLength: 1
-          minItems: 1
-    AdminLoginPayload:
-      type: object
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 6
-    AdminAuthSuccessResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/AdminUserResponse'
-        csrfToken:
-          type: string
-          description:
-            CSRF token provided for easier Swagger testing. Usually sent via
-            cookie.
-        traceId:
-          type: string
-          format: uuid
-    AdminUserResponse:
-      type: object
-      required:
-        - id
-        - name
-        - email
-        - phoneNumber
-        - accountStatus
-        - accountRole
-        - isVerified
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        phoneNumber:
-          type: string
-        accountStatus:
-          type: string
-          enum:
-            - ACTIVE
-            - INACTIVE
-            - BLOCKED
-        accountRole:
-          type: string
-          enum:
-            - USER
-            - ADMIN
-            - CLUB_OWNER
-        isVerified:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    UpdateProfilePayload:
-      type: object
-      properties:
-        name:
-          type: string
-          example: John Doe
-        phoneNumber:
-          type: string
-          example: '+1234567890'
-        location:
-          type: string
-          example: New York, USA
-        gender:
-          type: string
-          enum:
-            - MALE
-            - FEMALE
-            - OTHER
-          example: MALE
-        dateOfBirth:
-          type: string
-          format: date-time
-          example: '1990-01-01T00:00:00.000Z'
-        profileAvatar:
-          type: string
-          format: uri
-          example: https://example.com/avatar.jpg
-        profileCover:
-          type: string
-          format: uri
-          example: https://example.com/cover.jpg
-    AdminUpdateProfilePayload:
-      type: object
-      properties:
-        name:
-          type: string
-          example: Admin User
-        phoneNumber:
-          type: string
-          example: '+1234567890'
-        profileAvatar:
-          type: string
-          format: uri
-          example: https://example.com/admin-avatar.jpg
-    ProfileResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: Profile retrieved successfully
-        data:
-          type: object
+              example: 'Signup successful,Please check you email for otp to verify your account!'
+            data:
+              $ref: '#/components/schemas/SignupDTO'
+    SignupDuplicateErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required:
+            - errorType
           properties:
-            user:
-              type: object
-              properties:
-                id:
-                  type: string
-                  format: uuid
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                phoneNumber:
-                  type: string
-                accountStatus:
-                  type: string
-                accountRole:
-                  type: string
-                isVerified:
-                  type: boolean
-                profile:
-                  type: object
-                  properties:
-                    location:
-                      type: string
-                      nullable: true
-                    gender:
-                      type: string
-                      nullable: true
-                    dateOfBirth:
-                      type: string
-                      format: date-time
-                      nullable: true
-                    profileAvatar:
-                      type: string
-                      nullable: true
-                    profileCover:
-                      type: string
-                      nullable: true
-                    id:
-                      type: string
-                      format: uuid
-                    userId:
-                      type: string
-                      format: uuid
-                    createdAt:
-                      type: string
-                      format: date-time
-                    updatedAt:
-                      type: string
-                      format: date-time
-                createdAt:
-                  type: string
-                  format: date-time
-                updatedAt:
-                  type: string
-                  format: date-time
-        traceId:
-          type: string
-          format: uuid
-    AdminProfileResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: Admin profile retrieved successfully
-        data:
-          type: object
-          properties:
-            user:
-              type: object
-              properties:
-                id:
-                  type: string
-                  format: uuid
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                phoneNumber:
-                  type: string
-                accountStatus:
-                  type: string
-                accountRole:
-                  type: string
-                isVerified:
-                  type: boolean
-                profile:
-                  type: object
-                  properties:
-                    location:
-                      type: string
-                      nullable: true
-                    gender:
-                      type: string
-                      nullable: true
-                    dateOfBirth:
-                      type: string
-                      format: date-time
-                      nullable: true
-                    profileAvatar:
-                      type: string
-                      nullable: true
-                    profileCover:
-                      type: string
-                      nullable: true
-                    id:
-                      type: string
-                      format: uuid
-                    userId:
-                      type: string
-                      format: uuid
-                    createdAt:
-                      type: string
-                      format: date-time
-                    updatedAt:
-                      type: string
-                      format: date-time
-                createdAt:
-                  type: string
-                  format: date-time
-                updatedAt:
-                  type: string
-                  format: date-time
-        traceId:
-          type: string
-          format: uuid
-    LegalContent:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        legalContentType:
-          type: string
-          enum:
-            - TERMS_AND_CONDITION
-            - PRIVACY_AND_POLICY
-            - ABOUT_US
-        content:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    UpdateLegalContentPayload:
-      type: object
-      required:
-        - content
-      properties:
-        content:
-          type: string
-          minLength: 1
-    LegalContentResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: Legal content retrieved successfully
-        data:
-          type: object
-          properties:
-            legalContent:
-              $ref: '#/components/schemas/LegalContent'
-        traceId:
-          type: string
-          format: uuid
-    ClubListResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        meta:
-          $ref: '#/components/schemas/ExplorePaginationMeta'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ClubDetailPayload'
-        traceId:
-          type: string
-          format: uuid
-    ClubDetailPayload:
-      type: object
-      required:
-        - id
-        - userId
-        - name
-        - thumbnail
-        - images
-        - dressCode
-        - isRecurring
-        - isVip
-        - lat
-        - lng
-        - location
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        dressCode:
-          type: string
-        isRecurring:
-          type: boolean
-        isVip:
-          type: boolean
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        deactivatedAt:
-          type: string
-          format: date-time
-          nullable: true
-        clubOpeningHours:
-          type: array
-          items:
-            $ref: '#/components/schemas/UpdateClubOpeningHourPayload'
-        clubPackages:
-          type: array
-          items:
-            $ref: '#/components/schemas/UpdateClubPackagePayload'
-    ClubDetailResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/ClubDetailPayload'
-        traceId:
-          type: string
-          format: uuid
-    CreateClubResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          type: object
-          properties:
-            id:
+            message:
               type: string
-              format: uuid
-            userId:
+              example: 'User with this email already exist'
+            errorType:
               type: string
-              format: uuid
-            name:
-              type: string
-            description:
-              type: string
-              nullable: true
-            thumbnail:
-              type: string
-              format: uri
-            images:
-              type: array
-              items:
-                type: string
-                format: uri
-            dressCode:
-              type: string
-            isRecurring:
-              type: boolean
-            isVip:
-              type: boolean
-            lat:
-              type: number
-            lng:
-              type: number
-            location:
-              type: string
-            createdAt:
-              type: string
-              format: date-time
-            updatedAt:
-              type: string
-              format: date-time
-            deactivatedAt:
-              type: string
-              format: date-time
-              nullable: true
-        traceId:
-          type: string
-          format: uuid
+              example: 'DUPLICATE_DATA'
 
-    CreateEventPayload:
-      type: object
-      required:
-        - eventName
-        - thumbnail
-        - images
-        - lat
-        - lng
-        - location
-        - startAt
-        - endAt
-        - dressCode
-        - eventPrice
-        - currency
-      properties:
-        eventName:
-          type: string
-        eventDescription:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        eventStatus:
-          type: string
-          enum: [UPCOMING, ONGOING, COMPLETED, CANCELED]
-          default: UPCOMING
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        startAt:
-          type: string
-          format: date-time
-          description: Event timestamps are expected as UTC ISO datetime values.
-        endAt:
-          type: string
-          format: date-time
-          description: Event timestamps are expected as UTC ISO datetime values. endAt must be after startAt.
-        dressCode:
-          type: string
-        eventPrice:
-          type: number
-        currency:
-          type: string
-    UpdateEventPayload:
-      type: object
-      properties:
-        eventName:
-          type: string
-        eventDescription:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        eventStatus:
-          type: string
-          enum: [UPCOMING, ONGOING, COMPLETED, CANCELED]
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        startAt:
-          type: string
-          format: date-time
-          description: Event timestamps are expected as UTC ISO datetime values.
-        endAt:
-          type: string
-          format: date-time
-          description: Event timestamps are expected as UTC ISO datetime values. If provided, endAt must be after startAt.
-        dressCode:
-          type: string
-        eventPrice:
-          type: number
-        currency:
-          type: string
-        isActive:
-          type: boolean
-          description: Controls activation/deactivation through deactivatedAt.
-    EventDetailPayload:
-      type: object
-      required:
-        - id
-        - userId
-        - eventName
-        - thumbnail
-        - images
-        - eventStatus
-        - lat
-        - lng
-        - location
-        - startAt
-        - endAt
-        - dressCode
-        - eventPrice
-        - currency
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        eventName:
-          type: string
-        eventDescription:
-          type: string
-          nullable: true
-        thumbnail:
-          type: string
-          format: uri
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        eventStatus:
-          type: string
-          enum: [UPCOMING, ONGOING, COMPLETED, CANCELED]
-        lat:
-          type: number
-        lng:
-          type: number
-        location:
-          type: string
-        startAt:
-          type: string
-          format: date-time
-        endAt:
-          type: string
-          format: date-time
-        dressCode:
-          type: string
-        eventPrice:
-          type: number
-        currency:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        deactivatedAt:
-          type: string
-          format: date-time
-          nullable: true
-    CreateEventResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/EventDetailPayload'
-        traceId:
-          type: string
-          format: uuid
-    UpdateEventResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/EventDetailPayload'
-        traceId:
-          type: string
-          format: uuid
-    EventDetailResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/EventDetailPayload'
-        traceId:
-          type: string
-          format: uuid
-    ConnectStatus:
-      type: object
-      required:
-        [state, onboardingCompletedAt, requiresOnboarding, canCreateListings]
-      properties:
-        state:
-          type: string
-          enum:
-            [SETUP_REQUIRED, IN_PROGRESS, ACTION_REQUIRED, READY, RESTRICTED]
-          description: Sanitized provider-derived state. READY requires active transfers capability and payout readiness.
-        onboardingCompletedAt:
-          type: string
-          format: date-time
-          nullable: true
-        requiresOnboarding:
-          type: boolean
-        canCreateListings:
-          type: boolean
-    ConnectOnboardingResponse:
-      type: object
-      required: [success, message, data, traceId]
-      properties:
-        success: { type: boolean }
-        message: { type: string }
-        traceId: { type: string, format: uuid }
-        data:
-          type: object
-          required: [onboardingUrl, status]
-          properties:
-            onboardingUrl: { type: string, format: uri, nullable: true }
-            status: { $ref: '#/components/schemas/ConnectStatus' }
-    ConnectStatusResponse:
-      type: object
-      required: [success, message, data, traceId]
-      properties:
-        success: { type: boolean }
-        message: { type: string }
-        traceId: { type: string, format: uuid }
-        data: { $ref: '#/components/schemas/ConnectStatus' }
-    PaymentIntentRequest:
-      type: object
-      required: [orderId]
-      properties:
-        orderId:
-          type: string
-          format: uuid
-    PaymentIntentResponse:
-      type: object
-      required: [success, message, data]
-      properties:
-        success: { type: boolean, example: true }
-        message: { type: string, example: 'Payment initialization successful' }
-        data:
-          type: object
-          required: [clientSecret, transactionId, orderId]
-          properties:
-            clientSecret: { type: string }
-            transactionId: { type: string, format: uuid }
-            orderId: { type: string, format: uuid }
-
-    NotificationItem:
-      type: object
-      required:
-        - id
-        - userId
-        - notificationType
-        - title
-        - description
-        - isRead
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        notificationType:
-          type: string
-        title:
-          type: string
-        description:
-          type: string
-        metaData:
-          type: object
-          nullable: true
-        isRead:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    NotificationPaginatedResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
-        - type: object
-          required:
-            - meta
-            - data
-          properties:
-            meta:
-              $ref: '#/components/schemas/ExplorePaginationMeta'
-            data:
-              type: array
-              items:
-                $ref: '#/components/schemas/NotificationItem'
-    NotificationUnreadCountResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              type: object
-              required:
-                - unreadCount
-              properties:
-                unreadCount:
-                  type: integer
-    NotificationCountResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              type: object
-              required:
-                - count
-              properties:
-                count:
-                  type: integer
-    NotificationDetailResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/NotificationItem'
 paths:
   /health:
     get:
@@ -1896,3 +307,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+  /api/v1/auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Registers a new PARENT or TEACHER user account, hashes password, saves record, generates an OTP, sets OTP in Redis, sends verification email, and returns an OTP page token.
+      operationId: authSignup
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupPayload'
+      responses:
+        '201':
+          description: Signup successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+              example:
+                success: true
+                message: 'Signup successful,Please check you email for otp to verify your account!'
+                data:
+                  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: User with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupDuplicateErrorResponse'
+              example:
+                success: false
+                message: 'User with this email already exist'
+                errorType: 'DUPLICATE_DATA'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: email
+                    message: 'Please provide a valid email address'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
