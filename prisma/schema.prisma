@@ -186,6 +186,7 @@ model User {
   phoneVerifiedAt    DateTime?
   profileCompletedAt DateTime?
   lastLoginAt        DateTime?
+  isLegalTermAccepted Boolean   @default(false)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
