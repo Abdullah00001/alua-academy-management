@@ -29,6 +29,7 @@ export const corsWhiteList = [
   'https://alua-academy-management.localbox.online',
   'http://localhost:5173',
   'https://alua-admin.localbox.online',
+  'https://alua.localbox.online',
 ];
 export const saltRound = 10;
 export const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
@@ -295,6 +296,9 @@ export const REDIS_PREFIXES = {
  */
 export const QUEUE_JOBS = {
   // AUTO-GENERATED-JOBS-START
+  RESEND_VERIFICATION_OTP: 'resend-verification-otp',
+  SEND_SIGNUP_SUCCESS_EMAIL: 'send-signup-success-email',
+  ACCOUNT_CREATE_SUCCESS: 'account-create-success',
 
   // AUTO-GENERATED-JOBS-END
 } as const;
@@ -304,11 +308,12 @@ export const QUEUE_JOBS = {
  * ------------------AUTH ERROR TYPES------------
  * ==============================================
  */
+
 export enum AuthErrorType {
   TOKEN_EXPIRED = 'TOKEN_EXPIRED',
   TOKEN_INVALID = 'TOKEN_INVALID',
   TOKEN_BLACKLISTED = 'TOKEN_BLACKLISTED',
-  USER_BLOCKED = 'USER_BLOCKED',
+  USER_SUSPENDED = 'USER_SUSPENDED',
   ACCOUNT_INACTIVE = 'ACCOUNT_INACTIVE',
   USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
@@ -318,6 +323,16 @@ export enum AuthErrorType {
   ACCESS_DENIED = 'ACCESS_DENIED',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   INVALID_DEVICE_CONTEXT = 'INVALID_DEVICE_CONTEXT',
+  DEVICE_NOT_FOUND = 'DEVICE_NOT_FOUND',
+  DEVICE_NOT_OWNED = 'DEVICE_NOT_OWNED',
+  SESSION_LOGGED_OUT = 'SESSION_LOGGED_OUT',
+  SESSION_REVOKED = 'SESSION_REVOKED',
+  SESSION_EXPIRED = 'SESSION_EXPIRED',
+}
+
+export enum SystemErrorType {
+  INVALID_JSON_PAYLOAD = 'INVALID_JSON',
+  INTERNAL_SERVER_ERROR = 'SERVER_ERROR',
 }
 
 export const COOKIE_NAMES = {

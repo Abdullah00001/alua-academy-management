@@ -175,17 +175,19 @@ enum WebhookEventStatus {
 model User {
   id                 String     @id @default(uuid())
   role               Role
-  email              String?    @unique
-  phone              String?    @unique
-  passwordHash       String
+  email              String    @unique
+  phone              String    @unique
+  password           String
   fullName           String
   avatarUrl          String?
   language           Language   @default(EN)
-  status             UserStatus @default(ACTIVE)
+  status             UserStatus @default(INACTIVE)
   emailVerifiedAt    DateTime?
   phoneVerifiedAt    DateTime?
   profileCompletedAt DateTime?
   lastLoginAt        DateTime?
+  isProfileSetup     Boolean   @default(false)
+  isLegalTermAccepted Boolean   @default(false)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
@@ -213,6 +215,7 @@ model Parent {
   userId     String   @unique
   occupation String?
   address    String?
+  relationWithChild String?
   createdAt  DateTime @default(now())
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -223,9 +226,9 @@ model Parent {
 model Teacher {
   id            String   @id @default(uuid())
   userId        String   @unique
-  department    String?
-  qualification String?
-  bio           String?
+  department  String?
+  designation String?
+  bio         String?
   joiningDate   DateTime @default(now())
   createdAt     DateTime @default(now())
 
