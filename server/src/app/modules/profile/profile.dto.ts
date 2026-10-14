@@ -1,4 +1,12 @@
-import { Language, Parent, Role, Teacher, User, UserStatus } from '@prisma/client';
+import {
+  Language,
+  Parent,
+  Role,
+  Teacher,
+  User,
+  UserPreference,
+  UserStatus,
+} from '@prisma/client';
 
 export class SessionDTO {
   constructor(
@@ -14,7 +22,7 @@ export class SessionDTO {
     public language: Language
   ) {}
 
-  static buildSession(user: User) {
+  static buildSession(user: User & { preferences?: UserPreference | null }) {
     return new SessionDTO(
       user.id,
       user.fullName,
@@ -25,7 +33,10 @@ export class SessionDTO {
       user.status,
       user.isProfileSetup,
       user.profileCompletedAt,
-      user.language
+      // Defensive fallback for users created before the UserPreference
+      // backfill, or in edge cases where the preference row was deleted.
+      // After migration, every active user should have a preferences row.
+      user.preferences?.language ?? Language.EN
     );
   }
 }
@@ -48,14 +59,16 @@ export class ParentProfileDTO {
     public relationWithChild: string | null
   ) {}
 
-  static build(user: User & { parent: Parent }) {
+  static build(
+    user: User & { parent: Parent; preferences?: UserPreference | null }
+  ) {
     return new ParentProfileDTO(
       user.id,
       user.fullName,
       user.email,
       user.phone,
       user.avatarUrl,
-      user.language,
+      user.preferences?.language ?? Language.EN,
       user.createdAt,
       user.parent.occupation,
       user.parent.address,
@@ -78,14 +91,16 @@ export class TeacherProfileDTO {
     public bio: string | null
   ) {}
 
-  static build(user: User & { teacher: Teacher }) {
+  static build(
+    user: User & { teacher: Teacher; preferences?: UserPreference | null }
+  ) {
     return new TeacherProfileDTO(
       user.id,
       user.fullName,
       user.email,
       user.phone,
       user.avatarUrl,
-      user.language,
+      user.preferences?.language ?? Language.EN,
       user.createdAt,
       user.teacher.department,
       user.teacher.designation,

@@ -181,7 +181,6 @@ model User {
   password           String
   fullName           String
   avatarUrl          String?
-  language           Language   @default(EN)
   status             UserStatus @default(INACTIVE)
   emailVerifiedAt    DateTime?
   phoneVerifiedAt    DateTime?
@@ -192,6 +191,7 @@ model User {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
+  preferences         UserPreference?
   parent              Parent?
   teacher             Teacher?
   devices             Device[]
@@ -698,4 +698,17 @@ model WebhookEvent {
 
   @@index([status, createdAt])
   @@index([eventType])
+}
+
+model UserPreference {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  language           Language @default(EN)
+  notificationsPush  Boolean  @default(true)
+  notificationsEmail Boolean  @default(true)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }

@@ -571,11 +571,7 @@ components:
           nullable: true
           example: '2026-10-14T09:50:00.000Z'
         language:
-          type: string
-          enum:
-            - EN
-            - ES
-          example: 'EN'
+          $ref: '#/components/schemas/Language'
     ParentProfileSetupDTO:
       $ref: '#/components/schemas/SessionDTO'
     ParentProfileSetupResponse:
@@ -855,6 +851,89 @@ components:
             message:
               type: string
               example: 'Change password successful.'
+    Language:
+      type: string
+      enum:
+        - EN
+        - ES
+      example: 'EN'
+    NotificationSettingsDTO:
+      type: object
+      required:
+        - push
+        - email
+      properties:
+        push:
+          type: boolean
+          example: true
+        email:
+          type: boolean
+          example: true
+    SettingsDTO:
+      type: object
+      required:
+        - language
+        - notifications
+      properties:
+        language:
+          $ref: '#/components/schemas/Language'
+        notifications:
+          $ref: '#/components/schemas/NotificationSettingsDTO'
+    UpdateLanguagePayload:
+      type: object
+      required:
+        - language
+      properties:
+        language:
+          $ref: '#/components/schemas/Language'
+    UpdateNotificationPayload:
+      type: object
+      required:
+        - push
+        - email
+      properties:
+        push:
+          type: boolean
+          example: true
+        email:
+          type: boolean
+          example: true
+    SettingsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'Settings fetched successfully.'
+            data:
+              $ref: '#/components/schemas/SettingsDTO'
+    UpdateLanguageResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'Language updated successfully.'
+            data:
+              $ref: '#/components/schemas/SettingsDTO'
+    UpdateNotificationResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'Notification preferences updated successfully.'
+            data:
+              $ref: '#/components/schemas/SettingsDTO'
 
 paths:
   /health:
@@ -2815,6 +2894,151 @@ paths:
                 message: 'Internal server error'
                 errorType: 'SERVER_ERROR'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/settings:
+    get:
+      tags:
+        - Settings
+      summary: Fetch user settings
+      description: Authenticated endpoint to retrieve the user's settings, including preferred language and notification preferences.
+      operationId: getSettings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Settings fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+              example:
+                success: true
+                message: 'Settings fetched successfully.'
+                data:
+                  language: 'EN'
+                  notifications:
+                    push: true
+                    email: true
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication or device session error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenMissing:
+                  summary: Token not found
+                  value:
+                    success: false
+                    message: 'Token not found'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token is invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenRevoked:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                missingDevice:
+                  summary: Missing device context
+                  value:
+                    success: false
+                    message: 'Session is missing device information.'
+                    errorType: 'INVALID_DEVICE_CONTEXT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotFound:
+                  summary: Device not found
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_FOUND'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotOwned:
+                  summary: Device not owned
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_OWNED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionLoggedOut:
+                  summary: Session logged out
+                  value:
+                    success: false
+                    message: 'You have been logged out. Please log in again.'
+                    errorType: 'SESSION_LOGGED_OUT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionRevoked:
+                  summary: Session revoked
+                  value:
+                    success: false
+                    message: 'Your session has ended. Please log in again.'
+                    errorType: 'SESSION_REVOKED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: 'Your session has expired. Please log in again.'
+                    errorType: 'SESSION_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
   /api/v1/settings/password:
     post:
       tags:
@@ -2982,6 +3206,356 @@ paths:
                 errors:
                   - field: newPassword
                     message: 'Password must contain at least one special character'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/settings/language:
+    post:
+      tags:
+        - Settings
+      summary: Update preferred language
+      description: Authenticated endpoint to update the user's preferred language.
+      operationId: updateLanguage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLanguagePayload'
+      responses:
+        '200':
+          description: Language updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateLanguageResponse'
+              example:
+                success: true
+                message: 'Language updated successfully.'
+                data:
+                  language: 'ES'
+                  notifications:
+                    push: true
+                    email: true
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication or device session error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenMissing:
+                  summary: Token not found
+                  value:
+                    success: false
+                    message: 'Token not found'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token is invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenRevoked:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                missingDevice:
+                  summary: Missing device context
+                  value:
+                    success: false
+                    message: 'Session is missing device information.'
+                    errorType: 'INVALID_DEVICE_CONTEXT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotFound:
+                  summary: Device not found
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_FOUND'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotOwned:
+                  summary: Device not owned
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_OWNED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionLoggedOut:
+                  summary: Session logged out
+                  value:
+                    success: false
+                    message: 'You have been logged out. Please log in again.'
+                    errorType: 'SESSION_LOGGED_OUT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionRevoked:
+                  summary: Session revoked
+                  value:
+                    success: false
+                    message: 'Your session has ended. Please log in again.'
+                    errorType: 'SESSION_REVOKED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: 'Your session has expired. Please log in again.'
+                    errorType: 'SESSION_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: language
+                    message: "Invalid enum value. Expected 'EN' | 'ES'"
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/settings/notification:
+    post:
+      tags:
+        - Settings
+      summary: Update notification preferences
+      description: Authenticated endpoint to update the user's push and email notification preferences.
+      operationId: updateNotification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationPayload'
+      responses:
+        '200':
+          description: Notification preferences updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateNotificationResponse'
+              example:
+                success: true
+                message: 'Notification preferences updated successfully.'
+                data:
+                  language: 'EN'
+                  notifications:
+                    push: false
+                    email: true
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication or device session error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenMissing:
+                  summary: Token not found
+                  value:
+                    success: false
+                    message: 'Token not found'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token is invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenRevoked:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                missingDevice:
+                  summary: Missing device context
+                  value:
+                    success: false
+                    message: 'Session is missing device information.'
+                    errorType: 'INVALID_DEVICE_CONTEXT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotFound:
+                  summary: Device not found
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_FOUND'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotOwned:
+                  summary: Device not owned
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_OWNED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionLoggedOut:
+                  summary: Session logged out
+                  value:
+                    success: false
+                    message: 'You have been logged out. Please log in again.'
+                    errorType: 'SESSION_LOGGED_OUT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionRevoked:
+                  summary: Session revoked
+                  value:
+                    success: false
+                    message: 'Your session has ended. Please log in again.'
+                    errorType: 'SESSION_REVOKED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: 'Your session has expired. Please log in again.'
+                    errorType: 'SESSION_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: push
+                    message: 'Expected boolean, received string'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
         '500':
           description: Internal server error

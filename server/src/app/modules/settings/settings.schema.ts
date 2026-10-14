@@ -26,4 +26,19 @@ export const changePasswordSchema = z
   })
   .strict();
 
+export const updateLanguageSchema = z
+  .object({
+    language: z.enum(['EN', 'ES']),
+  })
+  .strict();
+
+export const updateNotificationSchema = z
+  .object({
+    push: z.boolean(),
+    email: z.boolean(),
+  })
+  .strict();
+
 export type TChangePasswordPayload = z.infer<typeof changePasswordSchema>;
+export type TUpdateLanguagePayload = z.infer<typeof updateLanguageSchema>;
+export type TUpdateNotificationPayload = z.infer<typeof updateNotificationSchema>;

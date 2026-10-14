@@ -1,4 +1,4 @@
-import { Parent, Teacher, User } from '@prisma/client';
+import { Parent, Teacher, User, UserPreference } from '@prisma/client';
 import {
   IGetParentProfileParams,
   IGetTeacherProfileParams,
@@ -104,14 +104,14 @@ export const getParentProfileService = async ({
   try {
     const userWithParent = await prisma.user.findUnique({
       where: { id: user.id },
-      include: { parent: true },
+      include: { parent: true, preferences: true },
     });
 
     if (!userWithParent || !userWithParent.parent) {
       return null;
     }
 
-    return ParentProfileDTO.build(userWithParent as User & { parent: Parent });
+    return ParentProfileDTO.build(userWithParent as User & { parent: Parent; preferences?: UserPreference | null });
   } catch (error) {
     throw error;
   }
@@ -149,7 +149,7 @@ export const updateParentProfileService = async ({
 
       return tx.user.findUnique({
         where: { id: user.id },
-        include: { parent: true },
+        include: { parent: true, preferences: true },
       });
     });
 
@@ -157,7 +157,7 @@ export const updateParentProfileService = async ({
       return null;
     }
 
-    return ParentProfileDTO.build(updatedUser as User & { parent: Parent });
+    return ParentProfileDTO.build(updatedUser as User & { parent: Parent; preferences?: UserPreference | null });
   } catch (error) {
     throw error;
   }
@@ -172,14 +172,14 @@ export const getTeacherProfileService = async ({
   try {
     const userWithTeacher = await prisma.user.findUnique({
       where: { id: user.id },
-      include: { teacher: true },
+      include: { teacher: true, preferences: true },
     });
 
     if (!userWithTeacher || !userWithTeacher.teacher) {
       return null;
     }
 
-    return TeacherProfileDTO.build(userWithTeacher as User & { teacher: Teacher });
+    return TeacherProfileDTO.build(userWithTeacher as User & { teacher: Teacher; preferences?: UserPreference | null });
   } catch (error) {
     throw error;
   }
@@ -216,7 +216,7 @@ export const updateTeacherProfileService = async ({
 
       return tx.user.findUnique({
         where: { id: user.id },
-        include: { teacher: true },
+        include: { teacher: true, preferences: true },
       });
     });
 
@@ -224,7 +224,7 @@ export const updateTeacherProfileService = async ({
       return null;
     }
 
-    return TeacherProfileDTO.build(updatedUser as User & { teacher: Teacher });
+    return TeacherProfileDTO.build(updatedUser as User & { teacher: Teacher; preferences?: UserPreference | null });
   } catch (error) {
     throw error;
   }

@@ -60,6 +60,7 @@ export const checkUserExistenceMiddleware = asyncHandler(
     const userId = user.sub;
     const isUserExist = await prisma.user.findUnique({
       where: { id: userId },
+      include: { preferences: true },
     });
     if (!isUserExist) {
       res.status(404).json({
