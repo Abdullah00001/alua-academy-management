@@ -19,3 +19,12 @@ export interface ISendSignupSuccessEmail {
   traceId: string;
   role: Role;
 }
+
+export interface IResendVerificationOtp {
+  // Add properties here
+  otp: string;
+  otpExpireAt: number;
+  name: string;
+  email: string;
+  traceId: string;
+}

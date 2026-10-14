@@ -296,6 +296,7 @@ export const REDIS_PREFIXES = {
  */
 export const QUEUE_JOBS = {
   // AUTO-GENERATED-JOBS-START
+  RESEND_VERIFICATION_OTP: 'resend-verification-otp',
   SEND_SIGNUP_SUCCESS_EMAIL: 'send-signup-success-email',
   ACCOUNT_CREATE_SUCCESS: 'account-create-success',
 

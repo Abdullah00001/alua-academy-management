@@ -4,6 +4,7 @@ import { asyncHandler } from '@/app/utils/system.utils';
 import {
   signupService,
   verifySignupUserService,
+  resendVerifySignupOtpService,
 } from '@/app/modules/auth/auth.services';
 import {
   TSignupPayload,
@@ -58,6 +59,27 @@ export const verifySignupUserController = asyncHandler(
       success: true,
       message: 'User verification successful',
       data,
+      traceId,
+    });
+    return;
+  }
+);
+
+/**
+ * This controller is for resend verify signup user otp.
+ * @param req
+ * @param res
+ * @returns void
+ */
+export const resendVerifySignupOtpController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    await resendVerifySignupOtpService({ user, traceId });
+
+    res.status(200).json({
+      success: true,
+      message: 'Signup verification otp resend successful!',
       traceId,
     });
     return;

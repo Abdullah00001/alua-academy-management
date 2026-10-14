@@ -49,7 +49,7 @@ export const verifySignupSchema = z.object({
     .min(1, { error: 'FCM token is required' })
     .trim(),
   platform: z.enum(
-    ['PARENT', 'TEACHER'],
-    'error: Invalid role. Please provide a valid role'
+    ['ANDROID', 'IOS'],
+    'error: Invalid platform. Please provide a valid platform'
   ),
 });

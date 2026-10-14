@@ -6,7 +6,7 @@ import prisma from '@/app/configs/db.configs';
 import { AuthErrorType, REDIS_PREFIXES } from '@/const';
 import { JwtPayload } from 'jsonwebtoken';
 import { User } from '@prisma/client';
-import { extractToken, verifyOtpPageToken } from '@/app/utils/jwt.utils';
+import { extractToken, verifyAccessToken, verifyOtpPageToken } from '@/app/utils/jwt.utils';
 import { getRedisClient } from '@/app/configs/redis.configs';
 import { compareOtp } from '@/app/utils/otp.utils';
 
@@ -195,5 +195,64 @@ export const checkOtpMiddleware = asyncHandler(
       return;
     }
     next();
+  }
+);
+
+/**
+ * This middleware is used to check if the user access token is valid and not expired.
+ * If the token is invalid or expired, it will return a 401 response.
+ * If the token is valid and not expired, it will call return next() for further process.
+ * @param req Request
+ * @param res Response
+ * @param next NextFunction
+ */
+
+export const checkUserAccessTokenMiddleware = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const traceId = getTraceId();
+    const token = extractToken(req);
+    const redisClient = getRedisClient();
+    if (!token) {
+      res.status(401).json({
+        success: false,
+        message: 'Token not found',
+        errorType: AuthErrorType.TOKEN_INVALID,
+        traceId,
+      });
+      return;
+    }
+    const isBlackListed = await redisClient.get(
+      createRedisKey(REDIS_PREFIXES.blacklist, token)
+    );
+    if (isBlackListed) {
+      res.status(401).json({
+        success: false,
+        message: 'Token has been revoked',
+        errorType: AuthErrorType.TOKEN_BLACKLISTED,
+        traceId,
+      });
+      return;
+    }
+    const decoded = verifyAccessToken(token);
+    if (decoded.error) {
+      if (decoded.error === AuthErrorType.TOKEN_EXPIRED) {
+        res.status(401).json({
+          success: false,
+          message: 'Token has been expired',
+          errorType: AuthErrorType.TOKEN_EXPIRED,
+          traceId,
+        });
+        return;
+      }
+      res.status(401).json({
+        success: false,
+        message: 'Token is invalid',
+        errorType: AuthErrorType.TOKEN_INVALID,
+        traceId,
+      });
+      return;
+    }
+    req.user = decoded.data as JwtPayload;
+    return next();
   }
 );

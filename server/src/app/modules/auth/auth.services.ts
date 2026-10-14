@@ -235,3 +235,48 @@ export const verifySignupUserService = async ({
     throw error;
   }
 };
+
+/**
+ * This service is for resend verify signup user otp.
+ * @param param0 { user, traceId }
+ * @returns Promise<void>
+ */
+export const resendVerifySignupOtpService = async ({
+  user,
+  traceId,
+}: {
+  user: User;
+  traceId: string;
+}): Promise<void> => {
+  try {
+    const redisClient = getRedisClient();
+    const emailQueue = getEmailQueue();
+    const otp = generate(6, {
+      digits: true,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+      upperCaseAlphabets: false,
+    });
+    const hashedOtp = hashOtp({ otp });
+    const emailData = {
+      name: user.fullName,
+      email: user.email,
+      otp,
+      otpExpireAt,
+      traceId,
+    };
+    await Promise.all([
+      redisClient.del(createRedisKey(REDIS_PREFIXES.otp, user.id)),
+      redisClient.set(
+        createRedisKey(REDIS_PREFIXES.otp, user.id),
+        hashedOtp,
+        'EX',
+        calculateMilliseconds(otpExpireAt, 'minutes')
+      ),
+      emailQueue.add(QUEUE_JOBS.RESEND_VERIFICATION_OTP, emailData),
+    ]);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};

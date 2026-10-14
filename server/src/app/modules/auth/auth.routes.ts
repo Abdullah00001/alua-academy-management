@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   signupController,
   verifySignupUserController,
+  resendVerifySignupOtpController,
 } from '@/app/modules/auth/auth.controllers';
 import {
   checkIsSignupUserExist,
@@ -33,6 +34,14 @@ router
     validateReqBody(verifySignupSchema),
     checkOtpMiddleware,
     verifySignupUserController
+  );
+
+router
+  .route('/auth/resend')
+  .post(
+    checkOtpPageTokenMiddleware,
+    checkUserExistenceMiddleware,
+    resendVerifySignupOtpController
   );
 
 export default router;
