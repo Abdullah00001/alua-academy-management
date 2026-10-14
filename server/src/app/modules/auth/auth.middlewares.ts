@@ -472,6 +472,7 @@ export const requireRole = (...allowedRoles: Role[]) =>
         res.status(403).json({
           success: false,
           message: 'You do not have permission to access this resource.',
+          errorType: AuthErrorType.FORBIDDEN,
           traceId,
         });
         return;
