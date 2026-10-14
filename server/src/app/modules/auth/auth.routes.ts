@@ -4,6 +4,7 @@ import {
   verifySignupUserController,
   resendVerifySignupOtpController,
   checkUserAccessTokenController,
+  loginController,
 } from '@/app/modules/auth/auth.controllers';
 import {
   checkIsSignupUserExist,
@@ -13,10 +14,13 @@ import {
   checkAccountStatus,
   checkDeviceSessionMiddleware,
   checkUserAccessTokenMiddleware,
+  checkPassword,
+  findUserForLoginByEmail,
 } from '@/app/modules/auth/auth.middlewares';
 import { validateReqBody } from '@/app/utils/system.utils';
 import {
   checkAccessTokenSchema,
+  loginSchema,
   signupSchema,
   verifySignupSchema,
 } from '@/app/modules/auth/auth.schema';
@@ -58,6 +62,16 @@ router
     checkAccountStatus,
     checkDeviceSessionMiddleware,
     checkUserAccessTokenController
+  );
+
+router
+  .route('/auth/login')
+  .post(
+    validateReqBody(loginSchema),
+    findUserForLoginByEmail,
+    checkPassword,
+    checkAccountStatus,
+    loginController
   );
 
 export default router;

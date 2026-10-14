@@ -1,6 +1,7 @@
 import prisma from '@/app/configs/db.configs';
 import { getRedisClient } from '@/app/configs/redis.configs';
 import {
+  ILoginServiceParams,
   TCheckAccessTokenPayload,
   TSignupPayload,
   TVerifySignUserOtpPayload,
@@ -25,7 +26,11 @@ import {
   REDIS_PREFIXES,
   userAccessTokenExpiresIn,
 } from '@/const';
-import { SignupDTO, VerifySignupUserDTO } from '@/app/modules/auth/auth.dto';
+import {
+  LoginDTO,
+  SignupDTO,
+  VerifySignupUserDTO,
+} from '@/app/modules/auth/auth.dto';
 import {
   Device,
   DeviceStatus,
@@ -322,3 +327,88 @@ export const checkUserAccessTokenService = async ({
     throw error;
   }
 };
+
+/**
+ * This service is used to login user.
+ * @param param0 { user, payload }
+ * @returns Promise<LoginDTO>
+ */
+export const loginService = async ({
+  user,
+  payload,
+}: ILoginServiceParams): Promise<LoginDTO> => {
+  try {
+    const { deviceIdentifier, fcmToken, platform, rememberMe } = payload;
+    const sessionDuration = rememberMe ? '30d' : '7d';
+    const sessionExpiresAt = sessionTimeCalculation(sessionDuration);
+
+    const { updatedUser, device } = await prisma.$transaction(async (tx) => {
+      // 1. Revoke any ACTIVE session with the same deviceIdentifier
+      await tx.device.updateMany({
+        where: {
+          deviceIdentifier,
+          status: DeviceStatus.ACTIVE,
+        },
+        data: {
+          status: DeviceStatus.REVOKED,
+          revokeReason: RevokeReason.NEW_LOGIN_SUPERSEDED,
+          fcmToken: null,
+        },
+      });
+
+      // 2. Revoke any ACTIVE session with the same fcmToken (different deviceIdentifier)
+      if (fcmToken) {
+        await tx.device.updateMany({
+          where: {
+            fcmToken,
+            deviceIdentifier: { not: deviceIdentifier },
+            status: DeviceStatus.ACTIVE,
+          },
+          data: {
+            status: DeviceStatus.REVOKED,
+            revokeReason: RevokeReason.FCM_SUPERSEDED,
+            fcmToken: null,
+          },
+        });
+      }
+
+      // 3. Update user lastLoginAt
+      const updatedUser = await tx.user.update({
+        where: { id: user.id },
+        data: {
+          lastLoginAt: new Date(),
+        },
+      });
+
+      // 4. Create new device session
+      const device = await tx.device.create({
+        data: {
+          userId: user.id,
+          deviceIdentifier,
+          fcmToken: fcmToken ?? null,
+          platform: platform as Platform,
+          status: DeviceStatus.ACTIVE,
+          sessionExpiresAt,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return { updatedUser, device };
+    });
+
+    const token = generateAccessTokenForUser({
+      sub: updatedUser.id,
+      deviceId: device.id,
+      role: updatedUser.role,
+      accountStatus: updatedUser.status,
+      rememberMe,
+    });
+
+    return LoginDTO.buildLogin(token, SessionDTO.buildSession(updatedUser));
+  } catch (error) {
+    throw error;
+  }
+};
+
