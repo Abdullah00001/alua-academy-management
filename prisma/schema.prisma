@@ -226,9 +226,9 @@ model Parent {
 model Teacher {
   id            String   @id @default(uuid())
   userId        String   @unique
-  department    String?
-  qualification String?
-  bio           String?
+  department  String?
+  designation String?
+  bio         String?
   joiningDate   DateTime @default(now())
   createdAt     DateTime @default(now())
 

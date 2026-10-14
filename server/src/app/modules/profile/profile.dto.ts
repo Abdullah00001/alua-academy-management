@@ -11,3 +11,15 @@ export class ParentProfileSetupDTO {
     public profileCompletedAt: Date | null
   ) {}
 }
+
+export class TeacherProfileSetupDTO {
+  constructor(
+    public userId: string,
+    public fullName: string,
+    public avatarUrl: string | null,
+    public role: Role,
+    public status: UserStatus,
+    public isProfileSetup: boolean,
+    public profileCompletedAt: Date | null
+  ) {}
+}

@@ -9,3 +9,13 @@ export const setUpParentProfileSchema = z.object({
   occupation: z.string().optional(),
   relationWithChild: z.string().optional(),
 });
+
+/**
+ * This schema will be used for validate the request body of teacher profile setup.
+ */
+export const setUpTeacherProfileSchema = z.object({
+  avatarUrl: z.url().optional(),
+  department: z.string().optional(),
+  designation: z.string().optional(),
+  bio: z.string().optional(),
+});

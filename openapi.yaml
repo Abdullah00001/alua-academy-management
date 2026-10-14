@@ -457,6 +457,80 @@ components:
               example: 'Parent profile setup successful.'
             data:
               $ref: '#/components/schemas/ParentProfileSetupDTO'
+    TeacherProfileSetupPayload:
+      type: object
+      properties:
+        avatarUrl:
+          type: string
+          format: uri
+          example: 'https://example.com/avatar.jpg'
+        department:
+          type: string
+          example: 'Mathematics'
+        designation:
+          type: string
+          example: 'Senior Lecturer'
+        bio:
+          type: string
+          example: 'Experienced high school mathematics instructor.'
+    TeacherProfileSetupDTO:
+      type: object
+      required:
+        - userId
+        - fullName
+        - avatarUrl
+        - role
+        - status
+        - isProfileSetup
+        - profileCompletedAt
+      properties:
+        userId:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        fullName:
+          type: string
+          example: 'Jane Smith'
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: 'https://example.com/avatar.jpg'
+        role:
+          type: string
+          enum:
+            - PARENT
+            - TEACHER
+            - ADMIN
+          example: 'TEACHER'
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+          example: 'ACTIVE'
+        isProfileSetup:
+          type: boolean
+          example: true
+        profileCompletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-10-14T10:20:00.000Z'
+    TeacherProfileSetupResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'Teacher profile setup successful.'
+            data:
+              $ref: '#/components/schemas/TeacherProfileSetupDTO'
+
 
 paths:
   /health:
@@ -923,3 +997,182 @@ paths:
                 message: 'Internal server error'
                 errorType: 'SERVER_ERROR'
                 traceId: 123e4567-e89b-12d3-a456-426614174000
+  /api/v1/profile/setup/teacher:
+    post:
+      tags:
+        - Profile
+      summary: Setup teacher profile
+      description: Sets up teacher-specific profile details (department, designation, bio) and updates user avatarUrl, marking isProfileSetup as true and recording profileCompletedAt.
+      operationId: profileSetupTeacher
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherProfileSetupPayload'
+      responses:
+        '200':
+          description: Teacher profile setup successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherProfileSetupResponse'
+              example:
+                success: true
+                message: 'Teacher profile setup successful.'
+                data:
+                  userId: '123e4567-e89b-12d3-a456-426614174000'
+                  fullName: 'Jane Smith'
+                  avatarUrl: 'https://example.com/avatar.jpg'
+                  role: 'TEACHER'
+                  status: 'ACTIVE'
+                  isProfileSetup: true
+                  profileCompletedAt: '2026-10-14T10:20:00.000Z'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '401':
+          description: Authentication or device session error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenMissing:
+                  summary: Token not found
+                  value:
+                    success: false
+                    message: 'Token not found'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                tokenInvalid:
+                  summary: Token is invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                tokenRevoked:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                missingDevice:
+                  summary: Missing device context
+                  value:
+                    success: false
+                    message: 'Session is missing device information.'
+                    errorType: 'INVALID_DEVICE_CONTEXT'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                deviceNotFound:
+                  summary: Device not found
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_FOUND'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                deviceNotOwned:
+                  summary: Device not owned
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_OWNED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                sessionLoggedOut:
+                  summary: Session logged out
+                  value:
+                    success: false
+                    message: 'You have been logged out. Please log in again.'
+                    errorType: 'SESSION_LOGGED_OUT'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                sessionRevoked:
+                  summary: Session revoked
+                  value:
+                    success: false
+                    message: 'Your session has ended. Please log in again.'
+                    errorType: 'SESSION_REVOKED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                sessionExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: 'Your session has expired. Please log in again.'
+                    errorType: 'SESSION_EXPIRED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: avatarUrl
+                    message: 'Invalid url'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: 123e4567-e89b-12d3-a456-426614174000
+
