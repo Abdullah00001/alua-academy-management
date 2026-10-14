@@ -2,6 +2,7 @@ import prisma from '@/app/configs/db.configs';
 import { getRedisClient } from '@/app/configs/redis.configs';
 import {
   ILoginServiceParams,
+  ILogoutServiceParams,
   TCheckAccessTokenPayload,
   TSignupPayload,
   TVerifySignUserOtpPayload,
@@ -407,6 +408,45 @@ export const loginService = async ({
     });
 
     return LoginDTO.buildLogin(token, SessionDTO.buildSession(updatedUser));
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+/**
+ * This service is used to logout a device session and blacklist the access token.
+ * @param param0 { device, jwtPayload, token }
+ * @returns Promise<void>
+ */
+export const logoutService = async ({
+  device,
+  jwtPayload,
+  token,
+}: ILogoutServiceParams): Promise<void> => {
+  try {
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    const tokenExp = jwtPayload.exp ?? 0;
+    const ttl = tokenExp - currentTimeInSeconds;
+
+    await prisma.device.update({
+      where: { id: device.id },
+      data: {
+        status: DeviceStatus.LOGGED_OUT,
+        fcmToken: null,
+      },
+    });
+
+    if (ttl > 0) {
+      const redisClient = getRedisClient();
+      await redisClient.set(
+        createRedisKey(REDIS_PREFIXES.blacklist, token),
+        token,
+        'EX',
+        ttl
+      );
+    }
+    return;
   } catch (error) {
     throw error;
   }

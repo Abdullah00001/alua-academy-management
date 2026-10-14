@@ -30,7 +30,7 @@ components:
         Note: The `/auth/verify` and `/auth/resend` endpoints expect the
         OTP-page pending verification token,
 
-        whereas `/auth/check` expects the standard user access token.
+        whereas `/auth/check` and `/auth/logout` expect the standard user access token.
 
         '
   schemas:
@@ -173,7 +173,6 @@ components:
                 - TOKEN_EXPIRED
                 - TOKEN_INVALID
                 - TOKEN_BLACKLISTED
-                - USER_BLOCKED
                 - USER_SUSPENDED
                 - ACCOUNT_INACTIVE
                 - USER_ALREADY_EXISTS
@@ -279,7 +278,6 @@ components:
       required:
         - otp
         - deviceIdentifier
-        - fcmToken
         - platform
       properties:
         otp:
@@ -295,6 +293,7 @@ components:
           type: string
           minLength: 1
           example: 'fcm_token_sample_abc123'
+          description: 'Optional FCM push token for push notifications. Omit if the user has denied notification permission.'
         platform:
           type: string
           enum:
@@ -330,7 +329,7 @@ components:
           enum:
             - ACTIVE
             - INACTIVE
-            - BLOCKED
+            - SUSPENDED
           example: ACTIVE
         id:
           type: string
@@ -440,6 +439,14 @@ components:
               example: 'Login successful.'
             data:
               $ref: '#/components/schemas/LoginDTO'
+    LogoutResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Logout successful.'
     ParentProfileSetupPayload:
       type: object
       properties:
@@ -1124,6 +1131,146 @@ paths:
                 errors:
                   - field: email
                     message: 'Please provide a valid email address'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: User logout
+      description: Logs out the current device session, marks device status as LOGGED_OUT, clears the FCM push token, and blacklists the current user access JWT in Redis for its remaining time-to-live.
+      operationId: authLogout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+              example:
+                success: true
+                message: 'Logout successful.'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication or device session error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenMissing:
+                  summary: Token not found
+                  value:
+                    success: false
+                    message: 'Token not found'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token is invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenRevoked:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                missingDevice:
+                  summary: Missing device context
+                  value:
+                    success: false
+                    message: 'Session is missing device information.'
+                    errorType: 'INVALID_DEVICE_CONTEXT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotFound:
+                  summary: Device not found
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_FOUND'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotOwned:
+                  summary: Device not owned
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_OWNED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionLoggedOut:
+                  summary: Session logged out
+                  value:
+                    success: false
+                    message: 'You have been logged out. Please log in again.'
+                    errorType: 'SESSION_LOGGED_OUT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionRevoked:
+                  summary: Session revoked
+                  value:
+                    success: false
+                    message: 'Your session has ended. Please log in again.'
+                    errorType: 'SESSION_REVOKED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: 'Your session has expired. Please log in again.'
+                    errorType: 'SESSION_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
         '500':
           description: Internal server error

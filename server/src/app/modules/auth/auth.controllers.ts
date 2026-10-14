@@ -1,13 +1,7 @@
 import { Request, Response } from 'express';
 import { getTraceId } from '@/app/configs/requestContext.configs';
 import { asyncHandler } from '@/app/utils/system.utils';
-import {
-  signupService,
-  verifySignupUserService,
-  resendVerifySignupOtpService,
-  checkUserAccessTokenService,
-  loginService,
-} from '@/app/modules/auth/auth.services';
+import { signupService, verifySignupUserService, resendVerifySignupOtpService, checkUserAccessTokenService, loginService, logoutService } from '@/app/modules/auth/auth.services';
 import {
   TCheckAccessTokenPayload,
   TLoginPayload,
@@ -16,6 +10,7 @@ import {
 } from '@/app/modules/auth/auth.types';
 import { Device, User } from '@prisma/client';
 import { extractToken } from '@/app/utils/jwt.utils';
+import { ITokenPayload } from '@/app/@types/jwt.types';
 
 /**
  * This controller is for signup.
@@ -133,6 +128,30 @@ export const loginController = asyncHandler(
       success: true,
       message: 'Login successful.',
       data,
+      traceId,
+    });
+    return;
+  }
+);
+
+/**
+ * This controller function will handle the logout request.
+ * @param req
+ * @param res
+ * @returns void
+ */
+export const logoutController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const device = req.device as Device;
+    const jwtPayload = req.jwtPayload as ITokenPayload;
+    const token = extractToken(req) as string;
+
+    await logoutService({ device, jwtPayload, token });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logout successful.',
       traceId,
     });
     return;

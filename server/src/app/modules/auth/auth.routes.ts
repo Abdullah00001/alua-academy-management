@@ -5,6 +5,7 @@ import {
   resendVerifySignupOtpController,
   checkUserAccessTokenController,
   loginController,
+  logoutController,
 } from '@/app/modules/auth/auth.controllers';
 import {
   checkIsSignupUserExist,
@@ -72,6 +73,16 @@ router
     checkPassword,
     checkAccountStatus,
     loginController
+  );
+
+router
+  .route('/auth/logout')
+  .post(
+    checkUserAccessTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    checkDeviceSessionMiddleware,
+    logoutController
   );
 
 export default router;
