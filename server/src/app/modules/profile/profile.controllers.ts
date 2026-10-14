@@ -4,10 +4,16 @@ import { asyncHandler } from '@/app/utils/system.utils';
 import {
   parentProfileSetupService,
   teacherProfileSetupService,
+  getParentProfileService,
+  updateParentProfileService,
+  getTeacherProfileService,
+  updateTeacherProfileService,
 } from '@/app/modules/profile/profile.services';
 import {
   TSetupParentProfilePayload,
   TSetupTeacherProfilePayload,
+  TUpdateParentProfilePayload,
+  TUpdateTeacherProfilePayload,
 } from '@/app/modules/profile/profile.types';
 import { User } from '@prisma/client';
 
@@ -54,6 +60,108 @@ export const teacherProfileSetupController = asyncHandler(
     res.status(200).json({
       success: true,
       message: 'Teacher profile setup successful.',
+      data,
+      traceId,
+    });
+    return;
+  }
+);
+
+export const getParentProfileController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+
+    const data = await getParentProfileService({ user });
+    if (!data) {
+      res.status(404).json({
+        success: false,
+        message: 'Parent profile not found.',
+        traceId,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Parent profile fetched successfully.',
+      data,
+      traceId,
+    });
+    return;
+  }
+);
+
+export const updateParentProfileController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    const payload = req.body as TUpdateParentProfilePayload;
+
+    const data = await updateParentProfileService({ user, payload });
+    if (!data) {
+      res.status(404).json({
+        success: false,
+        message: 'Parent profile not found.',
+        traceId,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Parent profile updated successfully.',
+      data,
+      traceId,
+    });
+    return;
+  }
+);
+
+export const getTeacherProfileController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+
+    const data = await getTeacherProfileService({ user });
+    if (!data) {
+      res.status(404).json({
+        success: false,
+        message: 'Teacher profile not found.',
+        traceId,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Teacher profile fetched successfully.',
+      data,
+      traceId,
+    });
+    return;
+  }
+);
+
+export const updateTeacherProfileController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    const payload = req.body as TUpdateTeacherProfilePayload;
+
+    const data = await updateTeacherProfileService({ user, payload });
+    if (!data) {
+      res.status(404).json({
+        success: false,
+        message: 'Teacher profile not found.',
+        traceId,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Teacher profile updated successfully.',
       data,
       traceId,
     });
