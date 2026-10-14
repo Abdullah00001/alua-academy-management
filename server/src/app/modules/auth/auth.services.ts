@@ -1,6 +1,7 @@
 import prisma from '@/app/configs/db.configs';
 import { getRedisClient } from '@/app/configs/redis.configs';
 import {
+  TCheckAccessTokenPayload,
   TSignupPayload,
   TVerifySignUserOtpPayload,
 } from '@/app/modules/auth/auth.types';
@@ -26,6 +27,7 @@ import {
 } from '@/const';
 import { SignupDTO, VerifySignupUserDTO } from '@/app/modules/auth/auth.dto';
 import {
+  Device,
   DeviceStatus,
   Platform,
   RevokeReason,
@@ -34,6 +36,7 @@ import {
   UserStatus,
 } from '@prisma/client';
 import { JwtPayload } from 'jsonwebtoken';
+import { SessionDTO } from '@/app/modules/profile/profile.dto';
 
 /**
  * This service is for create signup user
@@ -276,6 +279,45 @@ export const resendVerifySignupOtpService = async ({
       emailQueue.add(QUEUE_JOBS.RESEND_VERIFICATION_OTP, emailData),
     ]);
     return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * This service is used to check the user's access token state.
+ * It refreshes the device's lastSeenAt (throttled to once per hour)
+ * and rotates the FCM token if the client sent a new one.
+ * @param param0 { user, device, payload }
+ * @returns Promise<SessionDTO>
+ */
+export const checkUserAccessTokenService = async ({
+  user,
+  device,
+  payload,
+}: {
+  user: User;
+  device: Device;
+  payload: TCheckAccessTokenPayload;
+}): Promise<SessionDTO> => {
+  try {
+    const { fcmToken } = payload;
+    const LAST_SEEN_THROTTLE_MS = 60 * 60 * 1000;
+    const shouldUpdateLastSeenAt =
+      Date.now() - device.lastSeenAt.getTime() > LAST_SEEN_THROTTLE_MS;
+    const shouldUpdateFcmToken = !!fcmToken && fcmToken !== device.fcmToken;
+
+    if (shouldUpdateLastSeenAt || shouldUpdateFcmToken) {
+      await prisma.device.update({
+        where: { id: device.id },
+        data: {
+          lastSeenAt: shouldUpdateLastSeenAt ? new Date() : undefined,
+          fcmToken: shouldUpdateFcmToken ? fcmToken : undefined,
+        },
+      });
+    }
+
+    return SessionDTO.buildSession(user);
   } catch (error) {
     throw error;
   }

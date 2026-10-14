@@ -5,7 +5,7 @@ import { TSignupPayload } from '@/app/modules/auth/auth.types';
 import prisma from '@/app/configs/db.configs';
 import { AuthErrorType, REDIS_PREFIXES } from '@/const';
 import { JwtPayload } from 'jsonwebtoken';
-import { DeviceStatus, Role, User, UserStatus } from '@prisma/client';
+import { DeviceStatus, User, UserStatus } from '@prisma/client';
 import {
   extractToken,
   verifyAccessToken,
@@ -317,12 +317,9 @@ export const checkDeviceSessionMiddleware = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const traceId = getTraceId();
     const jwtPayload = req.jwtPayload as ITokenPayload;
-    const { sub, deviceId, role } = jwtPayload;
+    const { sub, deviceId } = jwtPayload;
 
     if (!deviceId) {
-      if (role === Role.ADMIN) {
-        return next();
-      }
       res.status(401).json({
         success: false,
         message: 'Session is missing device information.',

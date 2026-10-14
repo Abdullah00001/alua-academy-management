@@ -43,15 +43,7 @@ export const parentProfileSetupService = async ({
       });
       return data;
     });
-    return new ParentProfileSetupDTO(
-      data.id,
-      data.fullName,
-      data.avatarUrl,
-      data.role,
-      data.status,
-      data.isProfileSetup,
-      data.profileCompletedAt
-    );
+    return ParentProfileSetupDTO.buildSession(data);
   } catch (error) {
     throw error;
   }
@@ -91,15 +83,7 @@ export const teacherProfileSetupService = async ({
       });
       return data;
     });
-    return new TeacherProfileSetupDTO(
-      data.id,
-      data.fullName,
-      data.avatarUrl,
-      data.role,
-      data.status,
-      data.isProfileSetup,
-      data.profileCompletedAt
-    );
+    return TeacherProfileSetupDTO.buildSession(data);
   } catch (error) {
     throw error;
   }

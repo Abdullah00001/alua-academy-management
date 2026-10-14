@@ -5,12 +5,14 @@ import {
   signupService,
   verifySignupUserService,
   resendVerifySignupOtpService,
+  checkUserAccessTokenService,
 } from '@/app/modules/auth/auth.services';
 import {
+  TCheckAccessTokenPayload,
   TSignupPayload,
   TVerifySignUserOtpPayload,
 } from '@/app/modules/auth/auth.types';
-import { User } from '@prisma/client';
+import { Device, User } from '@prisma/client';
 import { extractToken } from '@/app/utils/jwt.utils';
 
 /**
@@ -80,6 +82,31 @@ export const resendVerifySignupOtpController = asyncHandler(
     res.status(200).json({
       success: true,
       message: 'Signup verification otp resend successful!',
+      traceId,
+    });
+    return;
+  }
+);
+
+/**
+ * This controller function will handle the check user access token request.
+ * @param req
+ * @param res
+ * @returns void
+ */
+export const checkUserAccessTokenController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    const device = req.device as Device;
+    const payload = req.body as TCheckAccessTokenPayload;
+
+    const data = await checkUserAccessTokenService({ user, device, payload });
+
+    res.status(200).json({
+      success: true,
+      message: 'User is authenticated.',
+      data,
       traceId,
     });
     return;

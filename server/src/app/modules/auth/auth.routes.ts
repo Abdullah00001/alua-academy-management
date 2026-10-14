@@ -3,15 +3,20 @@ import {
   signupController,
   verifySignupUserController,
   resendVerifySignupOtpController,
+  checkUserAccessTokenController,
 } from '@/app/modules/auth/auth.controllers';
 import {
   checkIsSignupUserExist,
   checkOtpMiddleware,
   checkOtpPageTokenMiddleware,
   checkUserExistenceMiddleware,
+  checkAccountStatus,
+  checkDeviceSessionMiddleware,
+  checkUserAccessTokenMiddleware,
 } from '@/app/modules/auth/auth.middlewares';
 import { validateReqBody } from '@/app/utils/system.utils';
 import {
+  checkAccessTokenSchema,
   signupSchema,
   verifySignupSchema,
 } from '@/app/modules/auth/auth.schema';
@@ -42,6 +47,17 @@ router
     checkOtpPageTokenMiddleware,
     checkUserExistenceMiddleware,
     resendVerifySignupOtpController
+  );
+
+router
+  .route('/auth/check')
+  .post(
+    validateReqBody(checkAccessTokenSchema),
+    checkUserAccessTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    checkDeviceSessionMiddleware,
+    checkUserAccessTokenController
   );
 
 export default router;

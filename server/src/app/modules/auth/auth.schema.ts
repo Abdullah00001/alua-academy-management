@@ -53,3 +53,12 @@ export const verifySignupSchema = z.object({
     'error: Invalid platform. Please provide a valid platform'
   ),
 });
+
+/**
+ * @description This schema is for check user access token endpoint
+ */
+export const checkAccessTokenSchema = z
+  .object({
+    fcmToken: z.string().optional(),
+  })
+  .strict();

@@ -175,8 +175,8 @@ enum WebhookEventStatus {
 model User {
   id                 String     @id @default(uuid())
   role               Role
-  email              String?    @unique
-  phone              String?    @unique
+  email              String    @unique
+  phone              String    @unique
   password           String
   fullName           String
   avatarUrl          String?
