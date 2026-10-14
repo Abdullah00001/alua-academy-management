@@ -135,8 +135,6 @@ dist
 # =======================================================
 # Project Specific
 # =======================================================
-docker-compose.yaml
-docker-compose.override.yml
 scratch_ssh.py
 **/src/generated/prisma/
 **/src/app/schemas/

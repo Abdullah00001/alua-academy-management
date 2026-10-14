@@ -1,3 +1,2 @@
-import { Request, Response } from 'express';
-import { getTraceId } from '@/app/configs/requestContext.configs';
-import { asyncHandler } from '@/app/utils/system.utils';
+// Profile module-specific middlewares (none currently required; route-level guards are in auth.middlewares.ts)
+export {};

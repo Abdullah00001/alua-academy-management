@@ -5,7 +5,7 @@ import { TLoginPayload, TSignupPayload } from '@/app/modules/auth/auth.types';
 import prisma from '@/app/configs/db.configs';
 import { AuthErrorType, REDIS_PREFIXES } from '@/const';
 import { JwtPayload } from 'jsonwebtoken';
-import { DeviceStatus, User, UserStatus } from '@prisma/client';
+import { DeviceStatus, Role, User, UserStatus } from '@prisma/client';
 import {
   extractToken,
   verifyAccessToken,
@@ -60,6 +60,7 @@ export const checkUserExistenceMiddleware = asyncHandler(
     const userId = user.sub;
     const isUserExist = await prisma.user.findUnique({
       where: { id: userId },
+      include: { preferences: true },
     });
     if (!isUserExist) {
       res.status(404).json({
@@ -454,3 +455,29 @@ export const checkPassword = asyncHandler(
     next();
   }
 );
+
+/**
+ * This middleware is used to restrict access to endpoints by user role.
+ * If the authenticated user's role does not match any of the allowed roles,
+ * it returns a 403 response.
+ * @param allowedRoles The roles permitted to access the endpoint
+ * @returns Express middleware function
+ */
+export const requireRole = (...allowedRoles: Role[]) =>
+  asyncHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const traceId = getTraceId();
+      const user = req.user as User;
+
+      if (!allowedRoles.includes(user.role)) {
+        res.status(403).json({
+          success: false,
+          message: 'You do not have permission to access this resource.',
+          errorType: AuthErrorType.FORBIDDEN,
+          traceId,
+        });
+        return;
+      }
+      next();
+    }
+  );

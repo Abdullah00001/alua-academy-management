@@ -94,6 +94,11 @@ export const signupService = async ({
           },
         });
       }
+      await tx.userPreference.create({
+        data: {
+          userId: user.id,
+        },
+      });
       return user;
     });
     const token = generateOtpPageToken({
@@ -378,6 +383,9 @@ export const loginService = async ({
         where: { id: user.id },
         data: {
           lastLoginAt: new Date(),
+        },
+        include: {
+          preferences: true,
         },
       });
 
