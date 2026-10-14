@@ -15,6 +15,8 @@ tags:
     description: User profile management and setup endpoints
   - name: Media
     description: Media and file upload management endpoints
+  - name: Settings
+    description: User settings and preferences endpoints
 
 components:
   securitySchemes:
@@ -829,6 +831,30 @@ components:
               example: 'Teacher profile updated successfully.'
             data:
               $ref: '#/components/schemas/TeacherProfileDTO'
+    ChangePasswordPayload:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          example: 'OldPassw0rd!'
+          description: User's current password
+        newPassword:
+          type: string
+          minLength: 6
+          maxLength: 16
+          example: 'NewPassw0rd@2026'
+          description: New password (6-16 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character)
+    ChangePasswordResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Change password successful.'
 
 paths:
   /health:
@@ -2777,6 +2803,185 @@ paths:
                 errors:
                   - field: urls
                     message: 'Media url is required'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/settings/password:
+    post:
+      tags:
+        - Settings
+      summary: Change password
+      description: Authenticated endpoint to change the user's password. Verifies current password and ensures new password differs, updates user password, and revokes all other active device sessions.
+      operationId: changePassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordPayload'
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordResponse'
+              example:
+                success: true
+                message: 'Change password successful.'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload or password verification error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Invalid JSON payload
+                  value:
+                    success: false
+                    message: 'Invalid JSON Payload'
+                    errorType: 'INVALID_JSON'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                passwordMismatchOrReused:
+                  summary: Current password incorrect or new password matches existing
+                  value:
+                    success: false
+                    message: 'Current password is incorrect or new password matches the existing one.'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication or device session error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenMissing:
+                  summary: Token not found
+                  value:
+                    success: false
+                    message: 'Token not found'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token is invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenRevoked:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                missingDevice:
+                  summary: Missing device context
+                  value:
+                    success: false
+                    message: 'Session is missing device information.'
+                    errorType: 'INVALID_DEVICE_CONTEXT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotFound:
+                  summary: Device not found
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_FOUND'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                deviceNotOwned:
+                  summary: Device not owned
+                  value:
+                    success: false
+                    message: 'Session is no longer valid. Please log in again.'
+                    errorType: 'DEVICE_NOT_OWNED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionLoggedOut:
+                  summary: Session logged out
+                  value:
+                    success: false
+                    message: 'You have been logged out. Please log in again.'
+                    errorType: 'SESSION_LOGGED_OUT'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionRevoked:
+                  summary: Session revoked
+                  value:
+                    success: false
+                    message: 'Your session has ended. Please log in again.'
+                    errorType: 'SESSION_REVOKED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                sessionExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: 'Your session has expired. Please log in again.'
+                    errorType: 'SESSION_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: newPassword
+                    message: 'Password must contain at least one special character'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
         '500':
           description: Internal server error

@@ -127,6 +127,7 @@ enum RevokeReason {
   SESSION_EXPIRED
   FCM_INVALID_TOKEN
   ADMIN_KICK
+  PASSWORD_CHANGED
 }
 
 enum NotificationType {
