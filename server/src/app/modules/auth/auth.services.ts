@@ -190,7 +190,7 @@ export const verifySignupUserService = async ({
         data: {
           userId: user.id,
           deviceIdentifier,
-          fcmToken: fcmToken,
+          fcmToken: fcmToken ?? null,
           platform: platform as Platform,
           status: DeviceStatus.ACTIVE,
           sessionExpiresAt,

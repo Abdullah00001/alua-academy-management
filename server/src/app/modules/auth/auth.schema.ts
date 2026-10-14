@@ -44,10 +44,7 @@ export const verifySignupSchema = z.object({
     .string({ error: 'Device identifier is required' })
     .min(1, { error: 'Device identifier is required' })
     .trim(),
-  fcmToken: z
-    .string({ error: 'FCM token is required' })
-    .min(1, { error: 'FCM token is required' })
-    .trim(),
+  fcmToken: z.string().min(1).trim().optional(),
   platform: z.enum(
     ['ANDROID', 'IOS'],
     'error: Invalid platform. Please provide a valid platform'

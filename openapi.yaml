@@ -371,6 +371,75 @@ components:
           type: string
           example: 'fcm-device-token-xyz123'
           description: 'Optional updated FCM device push token to rotate on the session.'
+    LoginPayload:
+      type: object
+      required:
+        - email
+        - password
+        - role
+        - deviceIdentifier
+        - platform
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'john.doe@example.com'
+        password:
+          type: string
+          format: password
+          minLength: 1
+          example: 'Secret123!'
+        role:
+          type: string
+          enum:
+            - PARENT
+            - TEACHER
+          example: 'PARENT'
+        deviceIdentifier:
+          type: string
+          minLength: 1
+          example: 'device-uuid-1234'
+          description: 'Unique client device identifier.'
+        fcmToken:
+          type: string
+          minLength: 1
+          example: 'fcm_token_sample_abc123'
+          description: 'Optional FCM push token for push notifications.'
+        platform:
+          type: string
+          enum:
+            - ANDROID
+            - IOS
+          example: 'ANDROID'
+        rememberMe:
+          type: boolean
+          default: false
+          example: false
+          description: 'Flag to determine session duration (30 days if true, 7 days if false).'
+    LoginDTO:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+          description: 'Standard user access token for authenticated endpoints.'
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        user:
+          $ref: '#/components/schemas/SessionDTO'
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'Login successful.'
+            data:
+              $ref: '#/components/schemas/LoginDTO'
     ParentProfileSetupPayload:
       type: object
       properties:
@@ -962,6 +1031,111 @@ paths:
                 message: 'Internal server error'
                 errorType: 'SERVER_ERROR'
                 traceId: 123e4567-e89b-12d3-a456-426614174000
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      description: Authenticates a parent or teacher with email and password, revokes superseded active sessions on the same device or with the same FCM push token, registers the new device session, and issues a standard user access JWT.
+      operationId: authLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginPayload'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                success: true
+                message: 'Login successful.'
+                data:
+                  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                  user:
+                    userId: '123e4567-e89b-12d3-a456-426614174000'
+                    fullName: 'John Doe'
+                    email: 'john.doe@example.com'
+                    phone: '+1234567890'
+                    avatarUrl: 'https://example.com/avatar.jpg'
+                    role: 'PARENT'
+                    status: 'ACTIVE'
+                    isProfileSetup: true
+                    profileCompletedAt: '2026-10-14T09:50:00.000Z'
+                    language: 'EN'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'Invalid Credential,Check Your Email And Password'
+                errorType: 'INVALID_CREDENTIALS'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: email
+                    message: 'Please provide a valid email address'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
   /api/v1/profile/setup/parent:
     post:
       tags:
