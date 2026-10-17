@@ -15,3 +15,7 @@ export type TResendRecoverUserOtpServiceParams = {
   user: User;
   traceId: string;
 };
+
+export type TVerifyRecoverUserOtpServiceParams = {
+  user: User;
+};

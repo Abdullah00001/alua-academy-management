@@ -4,6 +4,7 @@ import { asyncHandler } from '@/app/utils/system.utils';
 import {
   findRecoverUserService,
   resendRecoverUserOtpService,
+  verifyRecoverUserOtpService,
 } from '@/app/modules/recover/recover.services';
 import { User } from '@prisma/client';
 
@@ -43,6 +44,26 @@ export const resendRecoverUserOtpController = asyncHandler(
     res.status(200).json({
       success: true,
       message: 'Recover user otp resend successful!',
+      traceId,
+    });
+    return;
+  }
+);
+
+/**
+ * This controller is used to verify the otp of the user.
+ * @param req Request
+ * @param res Response
+ * @returns Promise<void>
+ */
+export const verifyRecoverUserOtpController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    await verifyRecoverUserOtpService({ user });
+    res.status(200).json({
+      success: true,
+      message: 'Recover user otp verfication successful!',
       traceId,
     });
     return;

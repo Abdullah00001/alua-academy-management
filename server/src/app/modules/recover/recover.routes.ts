@@ -2,15 +2,20 @@ import { Router } from 'express';
 import {
   findRecoverUserController,
   resendRecoverUserOtpController,
+  verifyRecoverUserOtpController,
 } from '@/app/modules/recover/recover.controllers';
 import { validateReqBody } from '@/app/utils/system.utils';
-import { findRecoverUserByEmailSchema } from '@/app/modules/recover/recover.schema';
+import {
+  findRecoverUserByEmailSchema,
+  verifyRecoverUserOtpSchema,
+} from '@/app/modules/recover/recover.schema';
 import {
   findRecoverUserMiddleware,
   checkResetPasswordPageTokenMiddleware,
 } from '@/app/modules/recover/recover.middlewares';
 import {
   checkAccountStatus,
+  checkOtpMiddleware,
   checkUserExistenceMiddleware,
 } from '@/app/modules/auth/auth.middlewares';
 
@@ -32,6 +37,17 @@ router
     checkUserExistenceMiddleware,
     checkAccountStatus,
     resendRecoverUserOtpController
+  );
+
+router
+  .route('/recover/verify')
+  .post(
+    checkResetPasswordPageTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    validateReqBody(verifyRecoverUserOtpSchema),
+    checkOtpMiddleware,
+    verifyRecoverUserOtpController
   );
 
 export default router;

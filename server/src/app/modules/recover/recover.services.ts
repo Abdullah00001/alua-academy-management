@@ -6,6 +6,7 @@ import {
 import {
   TFindRecoverUserByEmailServiceParams,
   TResendRecoverUserOtpServiceParams,
+  TVerifyRecoverUserOtpServiceParams,
 } from '@/app/modules/recover/recover.types';
 import { hashOtp } from '@/app/utils/otp.utils';
 import { generateResetPasswordPageToken } from '@/app/utils/jwt.utils';
@@ -102,6 +103,24 @@ export const resendRecoverUserOtpService = async ({
       ),
       emailQueue.add(QUEUE_JOBS.RESEND_VERIFICATION_OTP, emailPayload),
     ]);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * This service is for verify the otp of the user.
+ * @param param0 { traceId: string, user: User }
+ * @returns Promise<void>
+ */
+export const verifyRecoverUserOtpService = async ({
+  user,
+}: TVerifyRecoverUserOtpServiceParams): Promise<void> => {
+  try {
+    const redisClient = getRedisClient();
+    await redisClient.del(createRedisKey(REDIS_PREFIXES.otp, user.id));
+    return;
     return;
   } catch (error) {
     throw error;
