@@ -1,5 +1,12 @@
-import { calculateMilliseconds, generate } from '@/app/utils/system.utils';
-import { TFindRecoverUserByEmailServiceParams } from '@/app/modules/recover/recover.types';
+import {
+  calculateMilliseconds,
+  createRedisKey,
+  generate,
+} from '@/app/utils/system.utils';
+import {
+  TFindRecoverUserByEmailServiceParams,
+  TResendRecoverUserOtpServiceParams,
+} from '@/app/modules/recover/recover.types';
 import { hashOtp } from '@/app/utils/otp.utils';
 import { generateResetPasswordPageToken } from '@/app/utils/jwt.utils';
 import { otpExpireAt, QUEUE_JOBS, REDIS_PREFIXES } from '@/const';
@@ -40,7 +47,7 @@ export const findRecoverUserService = async ({
     };
     await Promise.all([
       redisClient.set(
-        REDIS_PREFIXES.otp,
+        createRedisKey(REDIS_PREFIXES.otp, user.id.toString()),
         hashedOtp,
         'EX',
         calculateMilliseconds(otpExpireAt, 'minutes')
@@ -60,9 +67,41 @@ export const findRecoverUserService = async ({
   }
 };
 
-export const resendRecoverUserOtpService = async (): Promise<void> => {
+/**
+ * This service is for resend the otp to the user.
+ * @param param0 { traceId: string, user: User }
+ * @returns Promise<void>
+ */
+export const resendRecoverUserOtpService = async ({
+  traceId,
+  user,
+}: TResendRecoverUserOtpServiceParams): Promise<void> => {
   try {
-    console.log("resendRecoverUserOtpService called");
+    const redisClient = getRedisClient();
+    const emailQueue = getEmailQueue();
+    const otp = generate(6, {
+      digits: true,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+      upperCaseAlphabets: false,
+    });
+    const hashedOtp = hashOtp({ otp });
+    const emailPayload = {
+      name: user.fullName,
+      email: user.email,
+      otp,
+      otpExpireAt,
+      traceId,
+    };
+    await Promise.all([
+      redisClient.set(
+        createRedisKey(REDIS_PREFIXES.otp, user.id.toString()),
+        hashedOtp,
+        'EX',
+        calculateMilliseconds(otpExpireAt, 'minutes')
+      ),
+      emailQueue.add(QUEUE_JOBS.RESEND_VERIFICATION_OTP, emailPayload),
+    ]);
     return;
   } catch (error) {
     throw error;

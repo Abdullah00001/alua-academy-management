@@ -10,3 +10,8 @@ export type TFindRecoverUserByEmailServiceParams = {
   user: User;
   traceId: string;
 };
+
+export type TResendRecoverUserOtpServiceParams = {
+  user: User;
+  traceId: string;
+};

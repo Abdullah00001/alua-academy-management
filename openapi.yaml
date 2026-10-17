@@ -987,6 +987,14 @@ components:
               example: 'Recover user found and otp send to user email.'
             data:
               $ref: '#/components/schemas/FindRecoverUserServiceDTO'
+    ResendRecoverUserOtpResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Recover user otp resend successful!'
 
 paths:
   /health:
@@ -3675,6 +3683,27 @@ paths:
                 message: 'User with the email is not found,Please check your email address!'
                 errorType: 'USER_NOT_FOUND'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
         '422':
           description: Request body validation failed
           content:
@@ -3687,6 +3716,97 @@ paths:
                 errors:
                   - field: email
                     message: 'Invalid email address'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/recover/resend:
+    post:
+      tags:
+        - Recover
+      summary: Resend password recovery OTP
+      description: Generates and sends a new password recovery OTP to the user's email, invalidating the previous OTP code. Expects the reset password page token in the Authorization Bearer header.
+      operationId: recoverResendOtp
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Password recovery OTP resent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendRecoverUserOtpResponse'
+              example:
+                success: true
+                message: 'Recover user otp resend successful!'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenBlacklisted:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
         '500':
           description: Internal server error

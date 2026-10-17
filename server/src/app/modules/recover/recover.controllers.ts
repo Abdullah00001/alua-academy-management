@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import { getTraceId } from '@/app/configs/requestContext.configs';
 import { asyncHandler } from '@/app/utils/system.utils';
-import { findRecoverUserService, resendRecoverUserOtpService } from '@/app/modules/recover/recover.services';
+import {
+  findRecoverUserService,
+  resendRecoverUserOtpService,
+} from '@/app/modules/recover/recover.services';
 import { User } from '@prisma/client';
 
 /**
@@ -26,15 +29,21 @@ export const findRecoverUserController = asyncHandler(
   }
 );
 
+/**
+ * This controller is used to resend the otp to the user.
+ * @param req Request
+ * @param res Response
+ * @returns Promise<void>  
+ */
 export const resendRecoverUserOtpController = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const traceId = getTraceId();
-    await resendRecoverUserOtpService();
-    
+    const user = req.user as User;
+    await resendRecoverUserOtpService({ traceId, user });
     res.status(200).json({
       success: true,
       message: 'Recover user otp resend successful!',
-      traceId
+      traceId,
     });
     return;
   }
