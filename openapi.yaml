@@ -17,6 +17,8 @@ tags:
     description: Media and file upload management endpoints
   - name: Settings
     description: User settings and preferences endpoints
+  - name: Recover
+    description: Account recovery and password reset endpoints
 
 components:
   securitySchemes:
@@ -934,6 +936,57 @@ components:
               example: 'Notification preferences updated successfully.'
             data:
               $ref: '#/components/schemas/SettingsDTO'
+    FindRecoverUserServiceDTO:
+      type: object
+      required:
+        - fullName
+        - email
+        - role
+        - status
+        - avatar
+        - token
+      properties:
+        fullName:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: 'john.doe@example.com'
+        role:
+          type: string
+          enum:
+            - PARENT
+            - TEACHER
+            - ADMIN
+          example: 'PARENT'
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+          example: 'ACTIVE'
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          example: 'https://example.com/avatar.jpg'
+        token:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    FindRecoverUserResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            message:
+              type: string
+              example: 'Recover user found and otp send to user email.'
+            data:
+              $ref: '#/components/schemas/FindRecoverUserServiceDTO'
 
 paths:
   /health:
@@ -3556,6 +3609,84 @@ paths:
                 errors:
                   - field: push
                     message: 'Expected boolean, received string'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/recover/find:
+    post:
+      tags:
+        - Recover
+      summary: Find user for password recovery
+      description: Verifies user existence by email, generates a password reset OTP, caches it in Redis, dispatches the OTP email via queue, and returns the user details with a reset password page token.
+      operationId: recoverFindUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindRecoverUserByEmailPayload'
+      responses:
+        '200':
+          description: Recover user found and OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindRecoverUserResponse'
+              example:
+                success: true
+                message: 'Recover user found and otp send to user email.'
+                data:
+                  fullName: 'John Doe'
+                  email: 'john.doe@example.com'
+                  role: 'PARENT'
+                  status: 'ACTIVE'
+                  avatar: 'https://example.com/avatar.jpg'
+                  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: User with the email is not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User with the email is not found,Please check your email address!'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: email
+                    message: 'Invalid email address'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
         '500':
           description: Internal server error
