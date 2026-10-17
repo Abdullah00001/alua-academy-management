@@ -1,4 +1,4 @@
-import { Role, UserStatus } from '@prisma/client';
+import { Role, User, UserStatus } from '@prisma/client';
 import { SessionDTO } from '@/app/modules/profile/profile.dto';
 
 export class SignupDTO {
@@ -15,6 +15,18 @@ export class VerifySignupUserDTO {
     public fullName: string,
     public avatarUrl: string | null
   ) {}
+
+  static build(token: string, user: User) {
+    return new VerifySignupUserDTO(
+      token,
+      user.isProfileSetup,
+      user.role,
+      user.status,
+      user.id,
+      user.fullName,
+      user.avatarUrl
+    );
+  }
 }
 
 export class LoginDTO {

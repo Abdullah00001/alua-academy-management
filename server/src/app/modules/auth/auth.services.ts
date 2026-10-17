@@ -236,15 +236,7 @@ export const verifySignupUserService = async ({
       emailQueue.add(QUEUE_JOBS.ACCOUNT_CREATE_SUCCESS, emailData),
       redisClient.del(createRedisKey(REDIS_PREFIXES.otp, updatedUser.id)),
     ]);
-    return new VerifySignupUserDTO(
-      accessToken,
-      updatedUser.isProfileSetup,
-      updatedUser.role,
-      updatedUser.status,
-      updatedUser.fullName,
-      updatedUser.id,
-      updatedUser.avatarUrl
-    );
+    return VerifySignupUserDTO.build(accessToken, updatedUser);
   } catch (error) {
     throw error;
   }
@@ -421,7 +413,6 @@ export const loginService = async ({
   }
 };
 
-
 /**
  * This service is used to logout a device session and blacklist the access token.
  * @param param0 { device, jwtPayload, token }
@@ -459,4 +450,3 @@ export const logoutService = async ({
     throw error;
   }
 };
-
