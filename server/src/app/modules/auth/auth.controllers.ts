@@ -8,6 +8,9 @@ import {
   checkUserAccessTokenService,
   loginService,
   logoutService,
+  adminLoginService,
+  checkAdminAccessTokenService,
+  refreshAdminAccessTokenService,
 } from '@/app/modules/auth/auth.services';
 import {
   TCheckAccessTokenPayload,
@@ -159,6 +162,48 @@ export const logoutController = asyncHandler(
     res.status(200).json({
       success: true,
       message: 'Logout successful.',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const adminLoginController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    await adminLoginService();
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin login successful!',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const checkAdminAccessTokenController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    await checkAdminAccessTokenService();
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin is authenticated!',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const refreshAdminAccessTokenController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    await refreshAdminAccessTokenService();
+
+    res.status(200).json({
+      success: true,
+      message: 'Token refresh successful!',
       traceId,
     });
     return;

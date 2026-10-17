@@ -450,3 +450,30 @@ export const logoutService = async ({
     throw error;
   }
 };
+
+export const adminLoginService = async (): Promise<void> => {
+  try {
+    console.log('adminLoginService called');
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const checkAdminAccessTokenService = async (): Promise<void> => {
+  try {
+    console.log('checkAdminAccessTokenService called');
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const refreshAdminAccessTokenService = async (): Promise<void> => {
+  try {
+    console.log('refreshAdminAccessTokenService called');
+    return;
+  } catch (error) {
+    throw error;
+  }
+};

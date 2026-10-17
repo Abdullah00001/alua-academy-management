@@ -6,6 +6,9 @@ import {
   checkUserAccessTokenController,
   loginController,
   logoutController,
+  adminLoginController,
+  checkAdminAccessTokenController,
+  refreshAdminAccessTokenController,
 } from '@/app/modules/auth/auth.controllers';
 import {
   checkIsSignupUserExist,
@@ -84,5 +87,11 @@ router
     checkDeviceSessionMiddleware,
     logoutController
   );
+
+router.route('/admin/auth/login').post(adminLoginController);
+
+router.route('/admin/auth/check').post(checkAdminAccessTokenController);
+
+router.route('/admin/auth/refresh').post(refreshAdminAccessTokenController);
 
 export default router;
