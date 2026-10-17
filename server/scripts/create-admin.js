@@ -72,6 +72,11 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
+const isValidPhone = (phone) => {
+  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+  return phoneRegex.test(phone.trim());
+};
+
 const createAdmin = async () => {
   try {
     await prisma.$connect();
@@ -79,15 +84,15 @@ const createAdmin = async () => {
     console.log('Creating Admin User');
     console.log('-------------------\n');
 
-    // --- Name ---
-    let name = '';
-    while (!name || name.length < 4) {
-      name = await question('Name: ');
-      if (!name) {
-        console.log('⚠ Name cannot be empty!');
-      } else if (name.length < 4) {
-        console.log('⚠ Name must be at least 4 characters long!');
-        name = '';
+    // --- Full Name ---
+    let fullName = '';
+    while (!fullName || fullName.length < 2) {
+      fullName = await question('Full Name: ');
+      if (!fullName) {
+        console.log('⚠ Full Name cannot be empty!');
+      } else if (fullName.length < 2) {
+        console.log('⚠ Full Name must be at least 2 characters long!');
+        fullName = '';
       }
     }
 
@@ -101,11 +106,27 @@ const createAdmin = async () => {
         console.log('⚠ Please enter a valid email address!');
         email = '';
       } else {
-        const existingUser = await prisma.user.findUnique({ where: { email } });
+        const existingUser = await prisma.user.findUnique({
+          where: { email: email.toLowerCase().trim() },
+        });
         if (existingUser) {
           console.log('⚠ A user with this email already exists!');
           email = '';
         }
+      }
+    }
+
+    // --- Phone ---
+    let phone = '';
+    while (!phone || !isValidPhone(phone)) {
+      phone = await question('Phone (e.g. +1234567890): ');
+      if (!phone) {
+        console.log('⚠ Phone cannot be empty!');
+      } else if (!isValidPhone(phone)) {
+        console.log(
+          '⚠ Please enter a valid phone number (E.164 format, e.g. +1234567890)!'
+        );
+        phone = '';
       }
     }
 
@@ -133,41 +154,41 @@ const createAdmin = async () => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // --- Create User + Profile in a transaction ---
+    // --- Create User + UserPreference in a transaction ---
     const result = await prisma.$transaction(async (tx) => {
-      // NOTE: Strictly following the actual Prisma schema for this repository:
-      // - name is on User, not Profile.
-      // - role is actually 'accountRole'.
-      // - accountStatus expects the 'AccountStatus' enum ('ACTIVE').
-      // - phoneNumber is required by the schema.
-      // - provider ('authProvider') exists on Device, not User, so it is omitted here.
+      const now = new Date();
       const user = await tx.user.create({
         data: {
-          name,
-          email,
+          fullName: fullName.trim(),
+          email: email.toLowerCase().trim(),
+          phone: phone.trim(),
           password: hashedPassword,
-          phoneNumber: '', 
-          isVerified: true,
-          accountStatus: 'ACTIVE',
-          accountRole: 'ADMIN',
+          role: 'ADMIN',
+          status: 'ACTIVE',
+          isProfileSetup: true,
+          isLegalTermAccepted: true,
+          emailVerifiedAt: now,
+          phoneVerifiedAt: now,
+          profileCompletedAt: now,
         },
       });
 
-      const profile = await tx.profile.create({
+      const preference = await tx.userPreference.create({
         data: {
           userId: user.id,
         },
       });
 
-      return { user, profile };
+      return { user, preference };
     });
 
     console.log('\n✓ Admin user created successfully!');
-    console.log(`Email:    ${email}`);
-    console.log(`Name:     ${name}`);
-    console.log(`Role:     ADMIN`);
-    console.log(`Verified: Yes`);
-    console.log(`ID:       ${result.user.id}`);
+    console.log(`Email:     ${result.user.email}`);
+    console.log(`Full Name: ${result.user.fullName}`);
+    console.log(`Phone:     ${result.user.phone}`);
+    console.log(`Role:      ${result.user.role}`);
+    console.log(`Status:    ${result.user.status}`);
+    console.log(`ID:        ${result.user.id}`);
 
     rl.close();
     await prisma.$disconnect();

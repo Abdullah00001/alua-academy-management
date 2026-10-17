@@ -1,16 +1,7 @@
 import { Request, Response } from 'express';
 import { getTraceId } from '@/app/configs/requestContext.configs';
 import { asyncHandler } from '@/app/utils/system.utils';
-import {
-  findRecoverUserService,
-  resendRecoverUserOtpService,
-  verifyRecoverUserOtpService,
-  resetRecoverUserPasswordService,
-  findAdminEmailForRecoverAccountService,
-  resendOtpToRecoverAdminEmailService,
-  verifyRecoverAdminOtpService,
-  resetRecoverAdminPasswordService,
-} from '@/app/modules/recover/recover.services';
+import { findRecoverUserService, resendRecoverUserOtpService, verifyRecoverUserOtpService, resetRecoverUserPasswordService, findAdminEmailForRecoverAccountService, resendOtpToRecoverAdminEmailService, verifyRecoverAdminOtpService, resetRecoverAdminPasswordService, } from '@/app/modules/recover/recover.services';
 import { User } from '@prisma/client';
 import { TResetRecoverUserPasswordPayload } from './recover.types';
 import { extractToken } from '@/app/utils/jwt.utils';
@@ -174,3 +165,4 @@ export const resetRecoverAdminPasswordController = asyncHandler(
     return;
   }
 );
+

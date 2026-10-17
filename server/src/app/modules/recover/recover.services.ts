@@ -20,6 +20,7 @@ import { getRedisClient } from '@/app/configs/redis.configs';
 import { getEmailQueue } from '@/app/queues/email/email.queue';
 import prisma from '@/app/configs/db.configs';
 import { JwtPayload } from 'jsonwebtoken';
+import { hashPassword } from '@/app/utils/password.utils';
 
 /**
  * This service is for find the recover user
@@ -145,10 +146,11 @@ export const resetRecoverUserPasswordService = async ({
   try {
     const redisClient = getRedisClient();
     const emailQueue = getEmailQueue();
+    const hashedPassword = await hashPassword(password);
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        password,
+        password: hashedPassword,
       },
     });
     const emailPayload = {
