@@ -28,3 +28,19 @@ export interface IResendVerificationOtp {
   email: string;
   traceId: string;
 }
+
+export interface ISendRecoverUserOtp {
+  // Add properties here
+  otp: string;
+  otpExpireAt: number;
+  name: string;
+  email: string;
+  traceId: string;
+}
+
+export interface IResetRecoverUserPasswordSuccessful {
+  // Add properties here
+  name: string;
+  email: string;
+  traceId: string;
+}

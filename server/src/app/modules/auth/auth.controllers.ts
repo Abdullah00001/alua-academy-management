@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
 import { getTraceId } from '@/app/configs/requestContext.configs';
 import { asyncHandler } from '@/app/utils/system.utils';
-import { signupService, verifySignupUserService, resendVerifySignupOtpService, checkUserAccessTokenService, loginService, logoutService } from '@/app/modules/auth/auth.services';
+import {
+  signupService,
+  verifySignupUserService,
+  resendVerifySignupOtpService,
+  checkUserAccessTokenService,
+  loginService,
+  logoutService,
+} from '@/app/modules/auth/auth.services';
 import {
   TCheckAccessTokenPayload,
   TLoginPayload,
