@@ -3,15 +3,18 @@ import {
   findRecoverUserController,
   resendRecoverUserOtpController,
   verifyRecoverUserOtpController,
+  resetRecoverUserPasswordController,
 } from '@/app/modules/recover/recover.controllers';
 import { validateReqBody } from '@/app/utils/system.utils';
 import {
   findRecoverUserByEmailSchema,
+  resetRecoverUserPasswordSchema,
   verifyRecoverUserOtpSchema,
 } from '@/app/modules/recover/recover.schema';
 import {
   findRecoverUserMiddleware,
   checkResetPasswordPageTokenMiddleware,
+  checkCurrentPasswordForReset,
 } from '@/app/modules/recover/recover.middlewares';
 import {
   checkAccountStatus,
@@ -48,6 +51,17 @@ router
     validateReqBody(verifyRecoverUserOtpSchema),
     checkOtpMiddleware,
     verifyRecoverUserOtpController
+  );
+
+router
+  .route('/recover/reset')
+  .post(
+    checkResetPasswordPageTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    validateReqBody(resetRecoverUserPasswordSchema),
+    checkCurrentPasswordForReset,
+    resetRecoverUserPasswordController
   );
 
 export default router;

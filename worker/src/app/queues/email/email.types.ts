@@ -37,3 +37,10 @@ export interface ISendRecoverUserOtp {
   email: string;
   traceId: string;
 }
+
+export interface IResetRecoverUserPasswordSuccessful {
+  // Add properties here
+  name: string;
+  email: string;
+  traceId: string;
+}

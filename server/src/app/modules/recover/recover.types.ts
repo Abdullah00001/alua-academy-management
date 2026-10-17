@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { findRecoverUserByEmailSchema } from '@/app/modules/recover/recover.schema';
+import {
+  findRecoverUserByEmailSchema,
+  resetRecoverUserPasswordSchema,
+} from '@/app/modules/recover/recover.schema';
 import { User } from '@prisma/client';
 
 export type TFindRecoverUserByEmailPayload = z.infer<
@@ -19,3 +22,14 @@ export type TResendRecoverUserOtpServiceParams = {
 export type TVerifyRecoverUserOtpServiceParams = {
   user: User;
 };
+
+export type TResetRecoverUserPasswordServiceParams = {
+  user: User;
+  password: string;
+  traceId: string;
+  token: string;
+};
+
+export type TResetRecoverUserPasswordPayload = z.infer<
+  typeof resetRecoverUserPasswordSchema
+>;

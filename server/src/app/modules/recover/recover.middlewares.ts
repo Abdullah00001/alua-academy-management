@@ -11,6 +11,7 @@ import {
 } from '@/app/utils/jwt.utils';
 import { getRedisClient } from '@/app/configs/redis.configs';
 import { JwtPayload } from 'jsonwebtoken';
+import { comparePassword } from '@/app/utils/password.utils';
 
 /**
  * This middleware is for find the recover user
@@ -98,6 +99,37 @@ export const checkResetPasswordPageTokenMiddleware = asyncHandler(
       return;
     }
     req.user = decoded.data as JwtPayload;
+    return next();
+  }
+);
+
+/**
+ * This middleware is used to check the current password for reset.
+ * It checks if the password is the same as the current password.
+ * If the password is the same as the current password, it returns an error.
+ * Otherwise, it calls the next middleware.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next function.
+ * @returns {Promise<void>}
+ */
+export const checkCurrentPasswordForReset = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    const { password } = req.body as { password: string };
+
+    const isSamePassword = await comparePassword(password, user.password);
+    if (isSamePassword) {
+      res.status(400).json({
+        success: false,
+        message:
+          'Your new password cannot be the same as your previous password.',
+        errorType: AuthErrorType.BAD_REQUEST,
+        traceId,
+      });
+      return;
+    }
     return next();
   }
 );

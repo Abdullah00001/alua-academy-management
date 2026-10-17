@@ -7,6 +7,8 @@
  */
 export const QUEUE_JOBS = {
   // AUTO-GENERATED-JOBS-START
+  RESET_RECOVER_USER_PASSWORD_SUCCESSFUL:
+    'reset-recover-user-password-successful',
   SEND_RECOVER_USER_OTP: 'send-recover-user-otp',
   RESEND_VERIFICATION_OTP: 'resend-verification-otp',
   SEND_SIGNUP_SUCCESS_EMAIL: 'send-signup-success-email',

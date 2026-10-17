@@ -6,14 +6,20 @@ import {
 import {
   TFindRecoverUserByEmailServiceParams,
   TResendRecoverUserOtpServiceParams,
+  TResetRecoverUserPasswordServiceParams,
   TVerifyRecoverUserOtpServiceParams,
 } from '@/app/modules/recover/recover.types';
 import { hashOtp } from '@/app/utils/otp.utils';
-import { generateResetPasswordPageToken } from '@/app/utils/jwt.utils';
+import {
+  generateResetPasswordPageToken,
+  verifyOtpPageToken,
+} from '@/app/utils/jwt.utils';
 import { otpExpireAt, QUEUE_JOBS, REDIS_PREFIXES } from '@/const';
 import { FindRecoverUserServiceDTO } from '@/app/modules/recover/recover.dto';
 import { getRedisClient } from '@/app/configs/redis.configs';
 import { getEmailQueue } from '@/app/queues/email/email.queue';
+import prisma from '@/app/configs/db.configs';
+import { JwtPayload } from 'jsonwebtoken';
 
 /**
  * This service is for find the recover user
@@ -121,6 +127,50 @@ export const verifyRecoverUserOtpService = async ({
     const redisClient = getRedisClient();
     await redisClient.del(createRedisKey(REDIS_PREFIXES.otp, user.id));
     return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * This service is for reset the password of the user.
+ * @returns Promise<void>
+ */
+export const resetRecoverUserPasswordService = async ({
+  password,
+  traceId,
+  user,
+  token,
+}: TResetRecoverUserPasswordServiceParams): Promise<void> => {
+  try {
+    const redisClient = getRedisClient();
+    const emailQueue = getEmailQueue();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password,
+      },
+    });
+    const emailPayload = {
+      name: user.fullName,
+      email: user.email,
+      traceId,
+    };
+    const decoded = verifyOtpPageToken(token) as JwtPayload;
+    const tokenExpirationTime = decoded.exp as number;
+    const currentTime = Math.floor(Date.now() / 1000); // current time in seconds
+    const ttl = Math.floor(tokenExpirationTime - currentTime); // remaining time in seconds
+    if (ttl > 0)
+      await redisClient.set(
+        createRedisKey(REDIS_PREFIXES.blacklist, token),
+        token as string,
+        'EX',
+        ttl
+      );
+    await emailQueue.add(
+      QUEUE_JOBS.RESET_RECOVER_USER_PASSWORD_SUCCESSFUL,
+      emailPayload
+    );
     return;
   } catch (error) {
     throw error;

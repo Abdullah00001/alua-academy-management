@@ -5,8 +5,11 @@ import {
   findRecoverUserService,
   resendRecoverUserOtpService,
   verifyRecoverUserOtpService,
+  resetRecoverUserPasswordService,
 } from '@/app/modules/recover/recover.services';
 import { User } from '@prisma/client';
+import { TResetRecoverUserPasswordPayload } from './recover.types';
+import { extractToken } from '@/app/utils/jwt.utils';
 
 /**
  * This controller is used to find the user for the password reset.
@@ -64,6 +67,28 @@ export const verifyRecoverUserOtpController = asyncHandler(
     res.status(200).json({
       success: true,
       message: 'Recover user otp verfication successful!',
+      traceId,
+    });
+    return;
+  }
+);
+
+/**
+ * This controller is used to reset the password of the user.
+ * @param req Request
+ * @param res Response
+ * @returns Promise<void>
+ */
+export const resetRecoverUserPasswordController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const { password } = req.body as TResetRecoverUserPasswordPayload;
+    const user = req.user as User;
+    const token = extractToken(req) as string;
+    await resetRecoverUserPasswordService({ password, traceId, user, token });
+    res.status(200).json({
+      success: true,
+      message: 'Recover user password reset successful!',
       traceId,
     });
     return;

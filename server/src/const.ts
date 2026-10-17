@@ -296,6 +296,8 @@ export const REDIS_PREFIXES = {
  */
 export const QUEUE_JOBS = {
   // AUTO-GENERATED-JOBS-START
+  RESET_RECOVER_USER_PASSWORD_SUCCESSFUL:
+    'reset-recover-user-password-successful',
   SEND_RECOVER_USER_OTP: 'send-recover-user-otp',
   RESEND_VERIFICATION_OTP: 'resend-verification-otp',
   SEND_SIGNUP_SUCCESS_EMAIL: 'send-signup-success-email',
@@ -330,6 +332,7 @@ export enum AuthErrorType {
   SESSION_REVOKED = 'SESSION_REVOKED',
   SESSION_EXPIRED = 'SESSION_EXPIRED',
   FORBIDDEN = 'FORBIDDEN',
+  BAD_REQUEST = 'BAD_REQUEST',
 }
 
 export enum SystemErrorType {

@@ -74,11 +74,19 @@ components:
       type: object
       required:
         - password
+        - confirmPassword
       properties:
         password:
           type: string
-          example: newStrongPassword123!
-          description: Minimum 6 characters
+          minLength: 6
+          maxLength: 16
+          example: 'NewStrongP@ss1'
+          description: 6 to 16 characters, must contain uppercase, lowercase, number, and special character.
+        confirmPassword:
+          type: string
+          minLength: 1
+          example: 'NewStrongP@ss1'
+          description: Must match the password field.
     SuccessResponse:
       type: object
       properties:
@@ -242,6 +250,7 @@ components:
                 - SESSION_REVOKED
                 - SESSION_EXPIRED
                 - FORBIDDEN
+                - BAD_REQUEST
     ValidationErrorResponse:
       allOf:
         - $ref: '#/components/schemas/ErrorResponse'
@@ -1003,6 +1012,14 @@ components:
             message:
               type: string
               example: 'Recover user otp verfication successful!'
+    ResetRecoverUserPasswordResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Recover user password reset successful!'
 
 paths:
   /health:
@@ -3951,6 +3968,149 @@ paths:
                   - field: otp
                     message: 'Otp must be 6 digits'
                 traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/recover/reset:
+    post:
+      tags:
+        - Recover
+      summary: Reset user password
+      description: Resets the user password using the reset password page token. Validates password constraints, ensures it differs from the previous password, updates password hash, blacklists the token in Redis, and emits a password reset confirmation email.
+      operationId: recoverResetPassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRecoverUserPasswordPayload'
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetRecoverUserPasswordResponse'
+              example:
+                success: true
+                message: 'Recover user password reset successful!'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Invalid JSON payload
+                  value:
+                    success: false
+                    message: 'Invalid JSON Payload'
+                    errorType: 'INVALID_JSON'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                passwordSameAsPrevious:
+                  summary: New password matches previous password
+                  value:
+                    success: false
+                    message: 'Your new password cannot be the same as your previous password.'
+                    errorType: 'BAD_REQUEST'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenBlacklisted:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                passwordRequirements:
+                  summary: Password does not meet requirements
+                  value:
+                    success: false
+                    message: 'Request body validation failed'
+                    errors:
+                      - field: password
+                        message: 'Password must contain at least one special character'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                passwordsDoNotMatch:
+                  summary: Passwords do not match
+                  value:
+                    success: false
+                    message: 'Request body validation failed'
+                    errors:
+                      - field: confirmPassword
+                        message: 'Passwords do not match'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
         '500':
           description: Internal server error
           content:
