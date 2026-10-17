@@ -176,3 +176,46 @@ export const resetRecoverUserPasswordService = async ({
     throw error;
   }
 };
+
+export const findAdminEmailForRecoverAccountService = async (
+  params: TFindRecoverUserByEmailServiceParams
+): Promise<FindRecoverUserServiceDTO> => {
+  try {
+    return await findRecoverUserService(params);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const resendOtpToRecoverAdminEmailService = async (
+  params: TResendRecoverUserOtpServiceParams
+): Promise<void> => {
+  try {
+    await resendRecoverUserOtpService(params);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyRecoverAdminOtpService = async (
+  params: TVerifyRecoverUserOtpServiceParams
+): Promise<void> => {
+  try {
+    await verifyRecoverUserOtpService(params);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const resetRecoverAdminPasswordService = async (
+  params: TResetRecoverUserPasswordServiceParams
+): Promise<void> => {
+  try {
+    await resetRecoverUserPasswordService(params);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};

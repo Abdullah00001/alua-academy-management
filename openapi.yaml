@@ -1020,6 +1020,38 @@ components:
             message:
               type: string
               example: 'Recover user password reset successful!'
+    FindAdminEmailForRecoverAccountResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Recover user found and otp send successfully'
+    ResendOtpToRecoverAdminEmailResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Otp resend successful to admin email!'
+    VerifyRecoverAdminOtpResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Otp verification successful for recover admin account!'
+    ResetRecoverAdminPasswordResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Password reset successful'
 
 paths:
   /health:
@@ -4074,6 +4106,507 @@ paths:
                     success: false
                     message: 'Your account is not active. Please verify your email or contact support.'
                     errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                passwordRequirements:
+                  summary: Password does not meet requirements
+                  value:
+                    success: false
+                    message: 'Request body validation failed'
+                    errors:
+                      - field: password
+                        message: 'Password must contain at least one special character'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                passwordsDoNotMatch:
+                  summary: Passwords do not match
+                  value:
+                    success: false
+                    message: 'Request body validation failed'
+                    errors:
+                      - field: confirmPassword
+                        message: 'Passwords do not match'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/admin/recover/find:
+    post:
+      tags:
+        - Recover
+      summary: Find admin user for password recovery
+      description: Verifies admin user existence by email, verifies account status and role, generates a password reset OTP, caches it in Redis, dispatches the OTP email via queue, and sets the recover_page_token HTTP-only cookie.
+      operationId: adminRecoverFindUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindRecoverUserByEmailPayload'
+      responses:
+        '200':
+          description: Recover admin user found and OTP sent successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: 'recover_page_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly; SameSite=Strict'
+              description: Sets the recover_page_token HTTP-only cookie for password recovery flow.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindAdminEmailForRecoverAccountResponse'
+              example:
+                success: true
+                message: 'Recover user found and otp send successfully'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: User with the email is not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User with the email is not found,Please check your email address!'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden or insufficient role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                forbiddenRole:
+                  summary: Insufficient role permissions
+                  value:
+                    success: false
+                    message: 'You do not have permission to access this resource.'
+                    errorType: 'FORBIDDEN'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: email
+                    message: 'Invalid email address'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/admin/recover/resend:
+    post:
+      tags:
+        - Recover
+      summary: Resend admin password recovery OTP
+      description: Generates and sends a new password recovery OTP to the admin's email, invalidating the previous OTP code. Expects the reset password page token in the recover_page_token cookie or Authorization Bearer header.
+      operationId: adminRecoverResendOtp
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin password recovery OTP resent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendOtpToRecoverAdminEmailResponse'
+              example:
+                success: true
+                message: 'Otp resend successful to admin email!'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenBlacklisted:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden or insufficient role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                forbiddenRole:
+                  summary: Insufficient role permissions
+                  value:
+                    success: false
+                    message: 'You do not have permission to access this resource.'
+                    errorType: 'FORBIDDEN'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/admin/recover/verify:
+    post:
+      tags:
+        - Recover
+      summary: Verify admin password recovery OTP
+      description: Verifies the 6-digit OTP code sent to the admin's email during password recovery. Expects the reset password page token in the recover_page_token cookie or Authorization Bearer header.
+      operationId: adminRecoverVerifyOtp
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRecoverUserOtpPayload'
+      responses:
+        '200':
+          description: Admin password recovery OTP verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyRecoverAdminOtpResponse'
+              example:
+                success: true
+                message: 'Otp verification successful for recover admin account!'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Invalid JSON Payload'
+                errorType: 'INVALID_JSON'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication or OTP verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenBlacklisted:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                otpExpired:
+                  summary: OTP expired
+                  value:
+                    success: false
+                    message: 'OTP has expired, please request a new one'
+                    errorType: 'OTP_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                invalidOtp:
+                  summary: Invalid OTP
+                  value:
+                    success: false
+                    message: 'Invalid OTP, please check and try again'
+                    errorType: 'INVALID_OTP'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden or insufficient role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                forbiddenRole:
+                  summary: Insufficient role permissions
+                  value:
+                    success: false
+                    message: 'You do not have permission to access this resource.'
+                    errorType: 'FORBIDDEN'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              example:
+                success: false
+                message: 'User not found'
+                errorType: 'USER_NOT_FOUND'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '422':
+          description: Request body validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: 'Request body validation failed'
+                errors:
+                  - field: otp
+                    message: 'OTP must be 6 digits'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemErrorResponse'
+              example:
+                success: false
+                message: 'Internal server error'
+                errorType: 'SERVER_ERROR'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+  /api/v1/admin/recover/reset:
+    post:
+      tags:
+        - Recover
+      summary: Reset admin password
+      description: Resets the admin's password after OTP verification, updates the credentials in the database, blacklists the recovery token, dispatches a confirmation email via queue, and clears the recover_page_token cookie. Expects the reset password page token in the recover_page_token cookie or Authorization Bearer header.
+      operationId: adminRecoverResetPassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRecoverUserPasswordPayload'
+      responses:
+        '200':
+          description: Admin password reset successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: 'recover_page_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly'
+              description: Clears the recover_page_token HTTP-only cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetRecoverAdminPasswordResponse'
+              example:
+                success: true
+                message: 'Password reset successful'
+                traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid JSON payload or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Invalid JSON payload
+                  value:
+                    success: false
+                    message: 'Invalid JSON Payload'
+                    errorType: 'INVALID_JSON'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                passwordSameAsPrevious:
+                  summary: New password matches previous password
+                  value:
+                    success: false
+                    message: 'Your new password cannot be the same as your previous password.'
+                    errorType: 'BAD_REQUEST'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                tokenExpired:
+                  summary: Token expired
+                  value:
+                    success: false
+                    message: 'Token has been expired'
+                    errorType: 'TOKEN_EXPIRED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenInvalid:
+                  summary: Token invalid
+                  value:
+                    success: false
+                    message: 'Token is invalid'
+                    errorType: 'TOKEN_INVALID'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                tokenBlacklisted:
+                  summary: Token revoked
+                  value:
+                    success: false
+                    message: 'Token has been revoked'
+                    errorType: 'TOKEN_BLACKLISTED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+        '403':
+          description: Account status forbidden or insufficient role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                userSuspended:
+                  summary: Account suspended
+                  value:
+                    success: false
+                    message: 'Your account has been suspended. Please contact the academy.'
+                    errorType: 'USER_SUSPENDED'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                accountInactive:
+                  summary: Account inactive
+                  value:
+                    success: false
+                    message: 'Your account is not active. Please verify your email or contact support.'
+                    errorType: 'ACCOUNT_INACTIVE'
+                    traceId: '123e4567-e89b-12d3-a456-426614174000'
+                forbiddenRole:
+                  summary: Insufficient role permissions
+                  value:
+                    success: false
+                    message: 'You do not have permission to access this resource.'
+                    errorType: 'FORBIDDEN'
                     traceId: '123e4567-e89b-12d3-a456-426614174000'
         '404':
           description: User not found

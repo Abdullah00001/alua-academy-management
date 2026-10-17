@@ -4,6 +4,10 @@ import {
   resendRecoverUserOtpController,
   verifyRecoverUserOtpController,
   resetRecoverUserPasswordController,
+  findAdminEmailForRecoverAccountController,
+  resendOtpToRecoverAdminEmailController,
+  verifyRecoverAdminOtpController,
+  resetRecoverAdminPasswordController,
 } from '@/app/modules/recover/recover.controllers';
 import { validateReqBody } from '@/app/utils/system.utils';
 import {
@@ -20,7 +24,9 @@ import {
   checkAccountStatus,
   checkOtpMiddleware,
   checkUserExistenceMiddleware,
+  requireRole,
 } from '@/app/modules/auth/auth.middlewares';
+import { Role } from '@prisma/client';
 
 const router = Router();
 
@@ -62,6 +68,50 @@ router
     validateReqBody(resetRecoverUserPasswordSchema),
     checkCurrentPasswordForReset,
     resetRecoverUserPasswordController
+  );
+
+router
+  .route('/admin/recover/find')
+  .post(
+    validateReqBody(findRecoverUserByEmailSchema),
+    findRecoverUserMiddleware,
+    checkAccountStatus,
+    requireRole(Role.ADMIN),
+    findAdminEmailForRecoverAccountController
+  );
+
+router
+  .route('/admin/recover/resend')
+  .post(
+    checkResetPasswordPageTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    requireRole(Role.ADMIN),
+    resendOtpToRecoverAdminEmailController
+  );
+
+router
+  .route('/admin/recover/verify')
+  .post(
+    checkResetPasswordPageTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    requireRole(Role.ADMIN),
+    validateReqBody(verifyRecoverUserOtpSchema),
+    checkOtpMiddleware,
+    verifyRecoverAdminOtpController
+  );
+
+router
+  .route('/admin/recover/reset')
+  .post(
+    checkResetPasswordPageTokenMiddleware,
+    checkUserExistenceMiddleware,
+    checkAccountStatus,
+    requireRole(Role.ADMIN),
+    validateReqBody(resetRecoverUserPasswordSchema),
+    checkCurrentPasswordForReset,
+    resetRecoverAdminPasswordController
   );
 
 export default router;

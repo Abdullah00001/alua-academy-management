@@ -6,10 +6,16 @@ import {
   resendRecoverUserOtpService,
   verifyRecoverUserOtpService,
   resetRecoverUserPasswordService,
+  findAdminEmailForRecoverAccountService,
+  resendOtpToRecoverAdminEmailService,
+  verifyRecoverAdminOtpService,
+  resetRecoverAdminPasswordService,
 } from '@/app/modules/recover/recover.services';
 import { User } from '@prisma/client';
 import { TResetRecoverUserPasswordPayload } from './recover.types';
 import { extractToken } from '@/app/utils/jwt.utils';
+import { COOKIE_NAMES, resetOtpPageTokenExpiresIn } from '@/const';
+import { cookieOption } from '@/app/utils/cookie.utils';
 
 /**
  * This controller is used to find the user for the password reset.
@@ -89,6 +95,80 @@ export const resetRecoverUserPasswordController = asyncHandler(
     res.status(200).json({
       success: true,
       message: 'Recover user password reset successful!',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const findAdminEmailForRecoverAccountController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    const data = await findAdminEmailForRecoverAccountService({ traceId, user });
+
+    res.cookie(
+      COOKIE_NAMES.RECOVER_PAGE_TOKEN,
+      data.token,
+      cookieOption(resetOtpPageTokenExpiresIn)
+    );
+    res.status(200).json({
+      success: true,
+      message: 'Recover user found and otp send successfully',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const resendOtpToRecoverAdminEmailController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    await resendOtpToRecoverAdminEmailService({ traceId, user });
+
+    res.status(200).json({
+      success: true,
+      message: 'Otp resend successful to admin email!',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const verifyRecoverAdminOtpController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const user = req.user as User;
+    await verifyRecoverAdminOtpService({ user });
+
+    res.status(200).json({
+      success: true,
+      message: 'Otp verification successful for recover admin account!',
+      traceId,
+    });
+    return;
+  }
+);
+
+export const resetRecoverAdminPasswordController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const traceId = getTraceId();
+    const { password } = req.body as TResetRecoverUserPasswordPayload;
+    const user = req.user as User;
+    const token =
+      (req.cookies[COOKIE_NAMES.RECOVER_PAGE_TOKEN] as string) ||
+      (extractToken(req) as string);
+    await resetRecoverAdminPasswordService({
+      password,
+      traceId,
+      user,
+      token,
+    });
+    res.clearCookie(COOKIE_NAMES.RECOVER_PAGE_TOKEN);
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful',
       traceId,
     });
     return;
