@@ -63,7 +63,7 @@ export const verifyRecoverUserOtpController = asyncHandler(
     await verifyRecoverUserOtpService({ user });
     res.status(200).json({
       success: true,
-      message: 'Recover user otp verfication successful!',
+      message: 'Recover user otp verification successful!',
       traceId,
     });
     return;
